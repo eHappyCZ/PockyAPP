@@ -43,6 +43,7 @@
 | 37 | Album: informace o souboru, stažení jedné fotky, výběru i celého alba, sdílení a přeposlání; Informace o zprávě; potvrzení přečtení v chatu opravdu zapnutá; filtry Vše, Lidé, Skupiny, Nepřečtené; kontrola aktualizací při každém spuštění |
 | 38 | Bezpečnostní fráze pro zálohu klíčů s ukazatelem síly, změna fráze, změna hesla k účtu, náhled hlasovky před odesláním |
 | 39 | Zákaz snímků obrazovky, zámek aplikace (PIN a otisk), smazání účtu, GIFy z klávesnice a animované GIFy, datum v changelogu jen u nejnovější verze |
+| 40 | Libovolný Matrix server: výběr serveru při přihlášení na webu i v Androidu, konfigurace webu pro vlastní nasazení, návod self-hosting, webová aplikace ve veřejném repozitáři |
 
 ## V plánu
 

@@ -1,5 +1,28 @@
 [
   {
+    "id": "0.9.5-fix7",
+    "version": "0.9.5-Fix #7",
+    "versionCode": 912,
+    "channel": "BETA",
+    "date": "2026-10-12",
+    "new": {
+      "cs": [
+        "Přihlášení k libovolnému Matrix serveru: na přihlašovací obrazovce Server · Změnit"
+      ],
+      "en": [
+        "Sign in to any Matrix homeserver: Server · Change on the sign-in screen"
+      ]
+    },
+    "fixed": {
+      "cs": [
+        "Srozumitelnější chyby, když server neexistuje nebo nepovoluje přihlášení heslem"
+      ],
+      "en": [
+        "Clearer errors when a server does not exist or does not allow password sign-in"
+      ]
+    }
+  },
+  {
     "id": "0.9.5-fix6",
     "version": "0.9.5-Fix #6",
     "versionCode": 911,

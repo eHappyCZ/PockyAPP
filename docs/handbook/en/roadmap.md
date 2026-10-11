@@ -43,6 +43,7 @@
 | 37 | Album: file details, saving one photo, a selection or the whole album, sharing and forwarding; message info; read receipts really enabled in chats; filters All, People, Groups, Unread; update check on every start |
 | 38 | Security phrase for the key backup with a strength meter, phrase change, account password change, voice message preview before sending |
 | 39 | Screenshot blocking, app lock (PIN and biometrics), account deletion, GIFs from the keyboard and animated GIFs, date only for the latest version in the release notes |
+| 40 | Any Matrix homeserver: server choice at sign-in on the web and on Android, web deployment config, self-hosting guide, the web app in the public repository |
 
 ## Planned
 
