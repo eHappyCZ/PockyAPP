@@ -1,0 +1,5 @@
+-keep class com.sun.jna.** { *; }
+-keep class * implements com.sun.jna.** { *; }
+-keep class com.pokecio.app.core.** { *; }
+-dontwarn java.awt.**
+-keep, includedescriptorclasses class org.rustls.platformverifier.** { *; }

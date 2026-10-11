@@ -1,0 +1,15 @@
+/target
+**/*.rs.bk
+.DS_Store
+.idea/
+*.iml
+local.properties
+.gradle/
+build/
+apps/android/core-bindings/src/main/jniLibs/
+apps/android/core-bindings/src/main/kotlin/com/pokecio/app/core/
+.env
+*.keystore
+*.jks
+apps/android/app/google-services.json
+node_modules/

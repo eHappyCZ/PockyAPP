@@ -1,0 +1,38 @@
+[workspace]
+resolver = "2"
+members = ["core/pocky-core", "core/pocky-ffi", "core/uniffi-bindgen"]
+
+[workspace.package]
+version = "0.9.5"
+edition = "2021"
+authors = ["eHappyCZ"]
+license = "AGPL-3.0-only"
+
+[workspace.dependencies]
+pocky-core = { path = "core/pocky-core" }
+uniffi = "0.32.2"
+
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.android-dev]
+inherits = "dev"
+debug = false
+strip = "debuginfo"
+
+[profile.web-dev]
+inherits = "release"
+lto = false
+codegen-units = 16
+
+[profile.web]
+inherits = "release"
+opt-level = "s"

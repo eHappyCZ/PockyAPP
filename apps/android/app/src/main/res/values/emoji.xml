@@ -1,0 +1,68 @@
+<resources>
+    <string-array name="sas_emoji_names">
+        <item>Pes</item>
+        <item>Kočka</item>
+        <item>Lev</item>
+        <item>Kůň</item>
+        <item>Jednorožec</item>
+        <item>Prase</item>
+        <item>Slon</item>
+        <item>Králík</item>
+        <item>Panda</item>
+        <item>Kohout</item>
+        <item>Tučňák</item>
+        <item>Želva</item>
+        <item>Ryba</item>
+        <item>Chobotnice</item>
+        <item>Motýl</item>
+        <item>Květina</item>
+        <item>Strom</item>
+        <item>Kaktus</item>
+        <item>Houba</item>
+        <item>Zeměkoule</item>
+        <item>Měsíc</item>
+        <item>Mrak</item>
+        <item>Oheň</item>
+        <item>Banán</item>
+        <item>Jablko</item>
+        <item>Jahoda</item>
+        <item>Kukuřice</item>
+        <item>Pizza</item>
+        <item>Dort</item>
+        <item>Srdce</item>
+        <item>Smajlík</item>
+        <item>Robot</item>
+        <item>Klobouk</item>
+        <item>Brýle</item>
+        <item>Klíč na matice</item>
+        <item>Santa Claus</item>
+        <item>Palec nahoru</item>
+        <item>Deštník</item>
+        <item>Přesýpací hodiny</item>
+        <item>Budík</item>
+        <item>Dárek</item>
+        <item>Žárovka</item>
+        <item>Kniha</item>
+        <item>Tužka</item>
+        <item>Kancelářská sponka</item>
+        <item>Nůžky</item>
+        <item>Zámek</item>
+        <item>Klíč</item>
+        <item>Kladivo</item>
+        <item>Telefon</item>
+        <item>Vlajka</item>
+        <item>Vlak</item>
+        <item>Kolo</item>
+        <item>Letadlo</item>
+        <item>Raketa</item>
+        <item>Pohár</item>
+        <item>Míč</item>
+        <item>Kytara</item>
+        <item>Trumpeta</item>
+        <item>Zvonek</item>
+        <item>Kotva</item>
+        <item>Sluchátka</item>
+        <item>Složka</item>
+        <item>Špendlík</item>
+    </string-array>
+</resources>

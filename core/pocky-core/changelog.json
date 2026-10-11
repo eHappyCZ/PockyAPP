@@ -1,0 +1,272 @@
+[
+  {
+    "id": "0.9.5-fix6",
+    "version": "0.9.5-Fix #6",
+    "versionCode": 911,
+    "channel": "BETA",
+    "date": "2026-10-11",
+    "new": {
+      "cs": [
+        "Zámek aplikace: 6místný PIN, odemknutí otiskem nebo obličejem a volba, kdy se má zamknout",
+        "Zákaz snímků obrazovky v celé aplikaci (ve výchozím stavu zapnutý), klíče a hesla jsou chráněné vždy",
+        "Smazání účtu přímo v aplikaci",
+        "GIFy a obrázky z klávesnice rovnou do chatu, GIFy se v chatu přehrávají"
+      ],
+      "en": [
+        "App lock: 6-digit PIN, unlock with fingerprint or face and a choice of when to lock",
+        "Block screenshots in the whole app (on by default), keys and passwords are always protected",
+        "Delete your account right in the app",
+        "GIFs and images from the keyboard go straight into the chat, GIFs play in the chat"
+      ]
+    },
+    "fixed": {
+      "cs": [
+        "V přehledu novinek je datum jen u nejnovější verze"
+      ],
+      "en": [
+        "The release notes show a date only for the latest version"
+      ]
+    }
+  },
+  {
+    "id": "0.9.5-fix5",
+    "version": "0.9.5-Fix #5",
+    "versionCode": 910,
+    "channel": "BETA",
+    "date": "2026-10-11",
+    "new": {
+      "cs": [
+        "Bezpečnostní fráze: zálohu klíčů na novém zařízení odemkneš frází, kterou si zvolíš, a nemusíš opisovat dlouhý klíč",
+        "Ukazatel síly fráze: aspoň 8 znaků a jeden speciální znak, doporučeno 16 a víc",
+        "Změna bezpečnostní fráze v Já → Zabezpečení",
+        "Změna hesla k účtu v Já → Profil, volitelně s odhlášením ostatních zařízení",
+        "Hlasovku si po nahrání můžeš poslechnout a pak teprve odeslat nebo zahodit"
+      ],
+      "en": [
+        "Security phrase: unlock your key backup on a new device with a phrase you choose instead of a long key",
+        "Phrase strength meter: at least 8 characters and one special character, 16 or more recommended",
+        "Change the security phrase in Me → Security",
+        "Change your account password in Me → Profile, optionally signing out other devices",
+        "Listen to a voice message after recording, then send or discard it"
+      ]
+    },
+    "fixed": {
+      "cs": [],
+      "en": []
+    }
+  },
+  {
+    "id": "0.9.5-fix4",
+    "version": "0.9.5-Fix #4",
+    "versionCode": 909,
+    "channel": "BETA",
+    "date": "2026-10-11",
+    "new": {
+      "cs": [
+        "Album chatu: informace o fotce nebo videu, stažení do galerie, sdílení a přeposlání do jiného chatu",
+        "V albu jde vybrat víc fotek najednou nebo stáhnout celou záložku",
+        "Informace o zprávě: kdy byla odeslána a kdo ji kdy přečetl",
+        "Přeposlání libovolné zprávy z menu zprávy"
+      ],
+      "en": [
+        "Chat album: photo and video details, saving to the gallery, sharing and forwarding to another chat",
+        "Select several photos at once in the album or download a whole tab",
+        "Message info: when it was sent and who read it when",
+        "Forward any message from the message menu"
+      ]
+    },
+    "fixed": {
+      "cs": [
+        "Potvrzení o přečtení se v chatu zase ukazují",
+        "Odpověď druhé strany se počítá jako přečtení dřívějších zpráv",
+        "Aplikace hledá aktualizaci při každém spuštění",
+        "Pořadí filtrů: Vše, Lidé, Skupiny, Nepřečtené"
+      ],
+      "en": [
+        "Read receipts show up in chats again",
+        "A reply counts as reading the earlier messages",
+        "The app checks for updates every time it starts",
+        "Filter order: All, People, Groups, Unread"
+      ]
+    }
+  },
+  {
+    "id": "0.9.5-fix3",
+    "version": "0.9.5-Fix #3",
+    "versionCode": 908,
+    "channel": "BETA",
+    "date": "2026-10-11",
+    "new": {
+      "cs": [
+        "V seznamu chatů zůstává pozdrav, pás stavů a filtry na místě, posouvají se jen chaty"
+      ],
+      "en": [
+        "In the chat list the greeting, status strip and filters stay in place, only the chats scroll"
+      ]
+    },
+    "fixed": {
+      "cs": [
+        "Album chatu se zase zobrazuje správně",
+        "Filtry v seznamu chatů mají zase správnou výšku a ukazatel"
+      ],
+      "en": [
+        "The chat album displays correctly again",
+        "The chat list filters have the right height and indicator again"
+      ]
+    }
+  },
+  {
+    "id": "0.9.5-fix2",
+    "version": "0.9.5-Fix #2",
+    "versionCode": 907,
+    "channel": "BETA",
+    "date": "2026-10-11",
+    "new": {
+      "cs": [
+        "Album chatu: fotky, videa, hlasovky a dokumenty z celého chatu, načtené automaticky",
+        "U hlasovek a dokumentů v albu je vidět, kdo je poslal",
+        "Fotky se v prohlížeči otevřou v plné kvalitě",
+        "Vlastní stav nastavený na jiném zařízení se ukáže hned",
+        "Potvrzení po nahrání profilové fotky",
+        "Připravované funkce po klepnutí ukážou „Připravujeme“"
+      ],
+      "en": [
+        "Chat album: photos, videos, voice messages and documents from the whole chat, loaded automatically",
+        "Voice messages and documents in the album show who sent them",
+        "Photos open in full quality in the viewer",
+        "A status set on another device shows up right away",
+        "A confirmation after uploading a profile photo",
+        "Upcoming features show “Coming soon” when tapped"
+      ]
+    },
+    "fixed": {
+      "cs": [
+        "Nová profilová fotka se ukáže hned, bez obnovení",
+        "Pole pro psaní je hned nad klávesnicí a hlavička chatu zůstává vidět",
+        "S větším systémovým písmem se texty a čísla neusekávají",
+        "Ikona pro změnu profilové fotky už není oříznutá",
+        "Pás stavů otevře správný chat, i když máte s někým víc chatů",
+        "Ověření osoby nenaruší chat, který máte otevřený"
+      ],
+      "en": [
+        "A new profile photo shows up right away, without refreshing",
+        "The message field sits right above the keyboard and the chat header stays visible",
+        "With a larger system font, texts and numbers are no longer cut off",
+        "The profile photo change icon is no longer clipped",
+        "The status strip opens the right chat even when you have several chats with someone",
+        "Verifying a person no longer disturbs the chat you have open"
+      ]
+    }
+  },
+  {
+    "id": "0.9.5-fix1",
+    "version": "0.9.5-Fix #1",
+    "versionCode": 906,
+    "channel": "BETA",
+    "date": "2026-10-11",
+    "new": {
+      "cs": [
+        "Srozumitelné hlášení, když ověření osoby nejde začít"
+      ],
+      "en": [
+        "A clear message when verifying a person can't start"
+      ]
+    },
+    "fixed": {
+      "cs": [
+        "Aplikace padala po spuštění, když s někým existovaly dva soukromé chaty",
+        "Ověření osoby funguje mezi PockyAPP i s Element Web a Element X",
+        "Ověření osoby už nezakládá nový chat, použije ten, který už máte",
+        "Žádost o ověření se v chatu nezobrazuje jako anglický text",
+        "Stav „Ověřeno“ se ukáže hned po dokončení ověření"
+      ],
+      "en": [
+        "The app crashed on start when there were two private chats with the same person",
+        "Verifying a person works between PockyAPP, Element Web and Element X",
+        "Verifying a person no longer creates a new chat, it uses the one you already have",
+        "A verification request no longer shows up in the chat as English text",
+        "The “Verified” status shows up right after verification finishes"
+      ]
+    }
+  },
+  {
+    "id": "0.9.5",
+    "version": "0.9.5",
+    "versionCode": 905,
+    "channel": "BETA",
+    "date": "2026-10-10",
+    "new": {
+      "cs": [
+        "Nová šifrovací identita, když chybí klíč i jiné zařízení",
+        "Ověřování lidí porovnáním emoji a upozornění na změnu identity",
+        "Štíty u zpráv s vysvětlením, co s nimi není v pořádku",
+        "Reakce libovolným emoji",
+        "Potvrzení přečtení s volbou soukromí",
+        "Historie změn v informacích o chatu",
+        "Upozornění na novou verzi, i když aplikace zrovna neběží",
+        "Novinky a opravy přímo v nastavení"
+      ],
+      "en": [
+        "A new encryption identity when both the key and another device are missing",
+        "Verifying people by comparing emoji and a warning when their identity changes",
+        "Shields on messages explaining what is wrong",
+        "React with any emoji",
+        "Read receipts with a privacy option",
+        "Change history in chat info",
+        "A notification about a new version even when the app isn't open",
+        "What's new and fixes right in settings"
+      ]
+    },
+    "fixed": {
+      "cs": [
+        "Chat už nezahlcují stavové zprávy, zůstaly jen ty důležité",
+        "Vlastní stav se po vypršení znovu neukazuje",
+        "Pozdrav ukazuje jméno místo celé adresy účtu",
+        "Ve skupině mají noví členové u přečtení správné jméno a fotku"
+      ],
+      "en": [
+        "Status messages no longer flood the chat, only the important ones stay",
+        "An expired status no longer comes back",
+        "The greeting shows a name instead of the full account address",
+        "New group members show the right name and photo on read receipts"
+      ]
+    }
+  },
+  {
+    "id": "0.9.4",
+    "version": "0.9.4",
+    "versionCode": 904,
+    "channel": "BETA",
+    "date": "2026-10-09",
+    "new": {
+      "cs": [
+        "Úplně nová aplikace PockyAPP postavená na Matrix Rust SDK",
+        "Koncové šifrování, ověření zařízení pomocí emoji a záloha klíčů",
+        "Aura kolem fotek, online stav, „píše…“ a vlastní stavy",
+        "Odpovědi, úpravy, reakce a mazání zpráv",
+        "Fotky bez skrytých údajů, galerie chatu, videa, soubory a hlasovky se skutečnou vlnou",
+        "Poloha přesně i přibližně, živá poloha na pozadí a záložka Mapa z vlastního mapového serveru",
+        "Nový chat, skupiny, pozvánky a informace o chatu",
+        "Tablety: seznam a chat vedle sebe, boční lišta a třetí panel",
+        "Plynulé přechody mezi obrazovkami",
+        "Oznámení bez šmírování a aktualizace přímo v aplikaci"
+      ],
+      "en": [
+        "A brand new PockyAPP built on the Matrix Rust SDK",
+        "End-to-end encryption, emoji device verification and key backup",
+        "Aura around photos, online status, “typing…” and custom statuses",
+        "Replies, edits, reactions and deleting messages",
+        "Photos without hidden data, chat gallery, videos, files and voice messages with a real waveform",
+        "Exact or approximate location, live location in the background and a Map tab from our own map server",
+        "New chats, groups, invites and chat info",
+        "Tablets: list and chat side by side, side rail and a third pane",
+        "Smooth transitions between screens",
+        "Notifications without snooping and in-app updates"
+      ]
+    },
+    "fixed": {
+      "cs": [],
+      "en": []
+    }
+  }
+]

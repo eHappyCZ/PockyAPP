@@ -1,0 +1,46 @@
+[package]
+name = "pocky-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+eyeball-im = "0.9"
+futures-util = "0.3"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp", "gif"] }
+imbl = "7"
+matrix-sdk-crypto = { version = "0.19.1", default-features = false }
+mime = "0.3"
+pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "sync"] }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+matrix-sdk = { version = "0.19.1", default-features = false, features = [
+    "e2e-encryption",
+    "automatic-room-key-forwarding",
+    "bundled-sqlite",
+    "rustls-aws-lc-rs",
+    "markdown",
+] }
+matrix-sdk-ui = { version = "0.19.1", default-features = false, features = ["rustls-aws-lc-rs"] }
+tokio = { version = "1", features = ["rt-multi-thread", "fs", "time"] }
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+matrix-sdk = { version = "0.19.1", default-features = false, features = [
+    "e2e-encryption",
+    "automatic-room-key-forwarding",
+    "indexeddb",
+    "js",
+    "markdown",
+] }
+matrix-sdk-ui = { version = "0.19.1", default-features = false, features = ["js"] }
+
+[dev-dependencies]
+tempfile = "3"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

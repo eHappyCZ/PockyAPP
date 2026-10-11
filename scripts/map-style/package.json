@@ -1,0 +1,15 @@
+{
+  "name": "pocky-map-style",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@protomaps/basemaps": "5.7.2",
+    "@turf/difference": "7.4.0",
+    "@turf/helpers": "7.4.0",
+    "@turf/simplify": "7.4.0",
+    "@turf/union": "7.4.0"
+  }
+}
