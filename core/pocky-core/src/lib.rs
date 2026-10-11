@@ -39,7 +39,9 @@ pub use auth::{
 pub use changelog::{changelog, Release};
 #[cfg(not(target_family = "wasm"))]
 pub use client::delete_store;
-pub use client::{build_client, Server, StoreLocation, SERVER_NAME};
+pub use client::{
+    build_client, check_server, normalize_server, Server, ServerCheck, StoreLocation, SERVER_NAME,
+};
 pub use devices::{list_devices, sign_out_device, DeviceInfo};
 pub use encryption::{
     change_password, change_recovery_passphrase, enable_recovery, encryption_status, logout_risk,

@@ -11,6 +11,8 @@ pub enum CoreError {
     RateLimited,
     #[error("homeserver could not be found")]
     ServerNotFound,
+    #[error("the server does not allow signing in with a password")]
+    PasswordLoginUnsupported,
     #[error("network error: {0}")]
     Network(String),
     #[error("not logged in")]

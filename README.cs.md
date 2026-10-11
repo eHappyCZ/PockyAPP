@@ -72,7 +72,7 @@ flowchart TB
 
     subgraph Core["Společné jádro (Rust)"]
         FFI["pocky-ffi<br/>UniFFI"]
-        WEB["WebAssembly<br/>wasm-bindgen"]
+        WEB["pocky-web<br/>wasm-bindgen"]
         C["pocky-core<br/>sync · timeline · šifrování · média · poloha"]
         SDK["matrix-rust-sdk"]
     end
@@ -97,21 +97,23 @@ jádra. Každý nový klient tak dostane stejné chování, stejné šifrování
 core/
   pocky-core/        logika nad matrix-rust-sdk
   pocky-ffi/         UniFFI vrstva pro nativní platformy
+  pocky-web/         most do prohlížeče přes WebAssembly
   uniffi-bindgen/    generátor bindingů
 apps/
   android/           aplikace pro Android (Kotlin, Jetpack Compose)
+  web/               webová aplikace (Svelte, TypeScript, Vite)
   apple/             připraveno pro iOS a macOS
 design/              barvy značky a sada ikon
 docs/handbook/       příručka pro vývoj (česky, anglicky v en/)
 scripts/             skripty pro sestavení, vydání a nasazení
 ```
 
-Webová aplikace a web pokecio.com se vyvíjejí zvlášť a v tomto repozitáři nejsou.
+Web pokecio.com se vyvíjí zvlášť a v tomto repozitáři není.
 
 ## Jak začít
 
-**Potřeba:** Rust stable, `cargo-ndk`, Android Studio se SDK 37 a NDK 30, Node.js pro
-generátor stylu mapy. Celý postup je v [docs/handbook/setup.md](docs/handbook/setup.md).
+**Potřeba:** Rust stable, `cargo-ndk`, Android Studio se SDK 37 a NDK 30, Node.js pro webové
+projekty. Celý postup je v [docs/handbook/setup.md](docs/handbook/setup.md).
 
 ```sh
 # společné jádro
@@ -122,10 +124,20 @@ cargo clippy --all-targets
 # Android (jádro v Rustu a Kotlin bindingy se sestaví samy)
 cd apps/android
 ./gradlew assembleDebug
+
+# webová aplikace
+scripts/build-web.sh
 ```
 
 Živé testy proti skutečnému serveru se spouštějí jen na vyžádání a přihlašovací údaje berou pouze
 z proměnných prostředí. Viz [docs/handbook/testing.md](docs/handbook/testing.md).
+
+## Vlastní nasazení
+
+Webová aplikace funguje s libovolným Matrix homeserverem, který povoluje přihlášení heslem.
+Sestavíte ji s vlastním serverem jako výchozím, nebo necháte lidi vybrat server na přihlašovací
+obrazovce – viz [docs/handbook/self-hosting.md](docs/handbook/self-hosting.md). K jinému serveru se
+umí přihlásit i aplikace pro Android.
 
 ## Dokumentace
 

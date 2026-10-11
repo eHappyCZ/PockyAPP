@@ -1,0 +1,6 @@
+{
+  "defaultServer": "pokecio.com",
+  "allowOtherServers": false,
+  "connect": ["https://pokecio.com", "https://matrix.pokecio.com"],
+  "mapTiles": "https://maps.pokecio.com/tiles/cz-sk.json"
+}

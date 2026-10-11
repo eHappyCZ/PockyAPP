@@ -39,9 +39,11 @@ Cargo.toml                 workspace
 core/
   pocky-core/              logic on top of matrix-sdk (no UniFFI dependency)
   pocky-ffi/               UniFFI layer, cdylib for the platforms
+  pocky-web/               WebAssembly bridge for the browser
   uniffi-bindgen/          binding generator
 apps/
   android/                 Gradle project (:app, :core-bindings)
+  web/                     web app (Svelte, TypeScript, Vite)
   apple/                   README only for now
 design/tokens.json         brand colours
 design/icons/              the icon set (SVG)
@@ -124,7 +126,7 @@ Android library versions live in `apps/android/gradle/libs.versions.toml`.
 
 Map tiles come from our own server `maps.pokecio.com`, which runs go-pmtiles (`pmtiles serve`)
 behind nginx. The archive is `cz-sk.pmtiles` (Protomaps Basemap, Czech Republic and Slovakia,
-zoom 0–15) in `/www/wwwroot/maps.pokecio.com/tiles`.
+zoom 0–15).
 
 - TileJSON: `https://maps.pokecio.com/tiles/cz-sk.json`
 - tiles: `https://maps.pokecio.com/tiles/cz-sk/{z}/{x}/{y}.mvt`

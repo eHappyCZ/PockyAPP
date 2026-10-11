@@ -75,7 +75,7 @@ flowchart TB
 
     subgraph Core["Shared core (Rust)"]
         FFI["pocky-ffi<br/>UniFFI bindings"]
-        WEB["WebAssembly<br/>wasm-bindgen"]
+        WEB["pocky-web<br/>wasm-bindgen"]
         C["pocky-core<br/>sync · timeline · encryption · media · location"]
         SDK["matrix-rust-sdk"]
     end
@@ -100,21 +100,23 @@ the core, so every new client gets the same behaviour, the same encryption and t
 core/
   pocky-core/        business logic on top of matrix-rust-sdk
   pocky-ffi/         UniFFI layer for native platforms
+  pocky-web/         WebAssembly bridge for the browser
   uniffi-bindgen/    binding generator
 apps/
   android/           Android app (Kotlin, Jetpack Compose)
+  web/               web app (Svelte, TypeScript, Vite)
   apple/             reserved for iOS and macOS
 design/              brand colours and the icon set
 docs/handbook/       developer handbook (English in en/, Czech)
 scripts/             build, release and deployment scripts
 ```
 
-The web app and the website are developed separately and are not part of this repository.
+The website pokecio.com is developed separately and is not part of this repository.
 
 ## Getting started
 
 **Requirements:** Rust stable, `cargo-ndk`, Android Studio with SDK 37 and NDK 30, Node.js for the
-map style generator. Full setup is in [docs/handbook/en/setup.md](docs/handbook/en/setup.md).
+web projects. Full setup is in [docs/handbook/en/setup.md](docs/handbook/en/setup.md).
 
 ```sh
 # shared core
@@ -125,10 +127,20 @@ cargo clippy --all-targets
 # Android (builds the Rust core and the Kotlin bindings automatically)
 cd apps/android
 ./gradlew assembleDebug
+
+# web app
+scripts/build-web.sh
 ```
 
 Live tests against a real homeserver are opt-in and read test credentials from environment
 variables only. See [docs/handbook/en/testing.md](docs/handbook/en/testing.md).
+
+## Self-hosting
+
+The web app works with any Matrix homeserver that allows password sign-in. Build it with your own
+server as the default, or let people pick their server on the sign-in screen – see
+[docs/handbook/en/self-hosting.md](docs/handbook/en/self-hosting.md). The Android app can sign in
+to another server too.
 
 ## Documentation
 

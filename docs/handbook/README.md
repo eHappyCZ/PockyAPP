@@ -18,6 +18,7 @@ Compose) a webová aplikace (Svelte + TypeScript); iOS, macOS, Windows a Linux j
 | [core.md](core.md) | Rust jádro `pocky-core` – moduly a funkce |
 | [ffi.md](ffi.md) | API, které jádro nabízí platformám (Kotlin) |
 | [android.md](android.md) | Struktura Android aplikace, obrazovky, stav |
+| [self-hosting.md](self-hosting.md) | Vlastní nasazení webové aplikace pro libovolný Matrix server |
 | [security.md](security.md) | Soukromí, úložiště, klíče, zámek aplikace, odhlášení |
 | [testing.md](testing.md) | Testy bez sítě a živé testy proti serveru |
 | [troubleshooting.md](troubleshooting.md) | Známé problémy a jejich řešení |

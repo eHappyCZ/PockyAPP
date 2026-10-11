@@ -1,0 +1,19 @@
+[package]
+name = "pocky-web"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+console_error_panic_hook = "0.1"
+futures-util = "0.3"
+js-sys = "0.3"
+pocky-core.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+wasm-bindgen = "=0.2.129"
+wasm-bindgen-futures = "0.4"

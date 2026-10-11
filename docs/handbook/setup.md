@@ -39,9 +39,11 @@ Cargo.toml                 workspace
 core/
   pocky-core/              logika nad matrix-sdk (bez závislosti na UniFFI)
   pocky-ffi/               UniFFI vrstva, cdylib pro platformy
+  pocky-web/               most do prohlížeče přes WebAssembly
   uniffi-bindgen/          generátor bindingů
 apps/
   android/                 Gradle projekt (:app, :core-bindings)
+  web/                     webová aplikace (Svelte, TypeScript, Vite)
   apple/                   zatím jen README
 design/tokens.json         barvy značky
 design/icons/              sada ikon (SVG)
@@ -124,8 +126,7 @@ Verze Android knihoven jsou v `apps/android/gradle/libs.versions.toml`.
 
 Mapové dlaždice jsou na vlastním serveru `maps.pokecio.com`, kde běží
 go-pmtiles (`pmtiles serve`) za nginx. Archiv je `cz-sk.pmtiles` (Protomaps
-Basemap, Česko a Slovensko, zoom 0–15) ve složce
-`/www/wwwroot/maps.pokecio.com/tiles`.
+Basemap, Česko a Slovensko, zoom 0–15).
 
 - TileJSON: `https://maps.pokecio.com/tiles/cz-sk.json`
 - dlaždice: `https://maps.pokecio.com/tiles/cz-sk/{z}/{x}/{y}.mvt`

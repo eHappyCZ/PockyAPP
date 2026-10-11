@@ -27,7 +27,8 @@ The ground rule: no logic in the UI. Anything two platforms would need belongs i
 - **`pocky-ffi`** only converts core types into UniFFI types, owns the tokio runtime and runs
   long-lived tasks (sync, list observers). No logic of its own.
 
-The web app uses the same core through WebAssembly; it is developed separately.
+The web app uses a third thin crate, `pocky-web`, which exposes the same core through
+`wasm-bindgen` (see [self-hosting.md](self-hosting.md)).
 
 ## Data flow
 

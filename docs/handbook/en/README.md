@@ -18,6 +18,7 @@ UniFFI, the browser through WebAssembly. The Android app (Kotlin + Jetpack Compo
 | [core.md](core.md) | The Rust core `pocky-core` – modules and functions |
 | [ffi.md](ffi.md) | The API the core offers to platforms (Kotlin) |
 | [android.md](android.md) | Android app structure, screens, state |
+| [self-hosting.md](self-hosting.md) | Self-hosting the web app for any Matrix homeserver |
 | [security.md](security.md) | Privacy, storage, keys, app lock, sign-out |
 | [testing.md](testing.md) | Offline tests and live tests against the server |
 | [troubleshooting.md](troubleshooting.md) | Known problems and their fixes |

@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -30,7 +31,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,22 +58,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.pokecio.app.R
+import com.pokecio.app.ServerCheck
 import com.pokecio.app.ui.components.ControlShape
 import com.pokecio.app.ui.components.GradientButton
 import com.pokecio.app.ui.theme.PockyColors
 import com.pokecio.app.ui.theme.PockyIcons
 
-private const val SERVER_NAME = "pokecio.com"
 
 @Composable
 fun LoginScreen(
     busy: Boolean,
     error: Int?,
+    server: String,
+    serverCheck: ServerCheck,
     onLogin: (username: String, password: String) -> Unit,
+    onCheckServer: (String) -> Unit,
+    onCloseServer: () -> Unit,
     onQrLogin: (() -> Unit)? = null,
     onRegister: (() -> Unit)? = null,
-    onChangeServer: (() -> Unit)? = null,
 ) {
+    var editingServer by rememberSaveable { mutableStateOf(false) }
     var username by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by rememberSaveable { mutableStateOf(false) }
@@ -122,7 +129,7 @@ fun LoginScreen(
                     placeholder = stringResource(R.string.login_username),
                     enabled = !busy,
                     prefix = "@",
-                    suffix = ":$SERVER_NAME",
+                    suffix = ":$server",
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next,
@@ -221,9 +228,22 @@ fun LoginScreen(
             }
 
             Spacer(Modifier.height(12.dp))
-            ServerChip(onChangeServer)
+            ServerChip(server, onChange = if (busy) null else ({ editingServer = true }))
         }
     }
+
+    if (editingServer) {
+        ServerDialog(
+            current = server,
+            check = serverCheck,
+            onCheck = onCheckServer,
+            onDismiss = {
+                editingServer = false
+                onCloseServer()
+            },
+        )
+    }
+    LaunchedEffect(server) { editingServer = false }
 }
 
 @Composable
@@ -292,7 +312,7 @@ private fun OrDivider() {
 }
 
 @Composable
-private fun ServerChip(onChange: (() -> Unit)?) {
+private fun ServerChip(server: String, onChange: (() -> Unit)?) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -306,7 +326,7 @@ private fun ServerChip(onChange: (() -> Unit)?) {
         )
         Spacer(Modifier.width(10.dp))
         Text(
-            text = SERVER_NAME,
+            text = server,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
             color = PockyColors.Ink,
@@ -314,6 +334,59 @@ private fun ServerChip(onChange: (() -> Unit)?) {
         Spacer(Modifier.width(10.dp))
         LinkText(stringResource(R.string.login_server_change), onChange, MaterialTheme.typography.bodyMedium)
     }
+}
+
+@Composable
+private fun ServerDialog(current: String, check: ServerCheck, onCheck: (String) -> Unit, onDismiss: () -> Unit) {
+    var input by rememberSaveable { mutableStateOf(current) }
+    val checking = check == ServerCheck.Checking
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = PockyColors.Surface,
+        title = { Text(stringResource(R.string.login_server_title)) },
+        text = {
+            Column {
+                LoginField(
+                    value = input,
+                    onValueChange = { input = it.trim() },
+                    placeholder = "example.org",
+                    enabled = !checking,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Uri,
+                        imeAction = ImeAction.Done,
+                        autoCorrectEnabled = false,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { onCheck(input) }),
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.login_server_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = PockyColors.InkMuted,
+                )
+                if (check is ServerCheck.Failed) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(check.message),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onCheck(input) }, enabled = !checking) {
+                Text(
+                    stringResource(if (checking) R.string.login_server_checking else R.string.login_server_use),
+                    color = PockyColors.AccentSoft,
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !checking) { Text(stringResource(R.string.cancel)) }
+        },
+    )
 }
 
 @Composable

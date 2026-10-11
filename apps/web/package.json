@@ -1,0 +1,25 @@
+{
+  "name": "pockyapp-web",
+  "private": true,
+  "type": "module",
+  "version": "0.9.5",
+  "scripts": {
+    "core": "../../scripts/build-web-core.sh",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "map": "rm -rf public/map && cp -R ../android/app/src/main/assets/map public/map"
+  },
+  "devDependencies": {
+    "@fontsource-variable/bricolage-grotesque": "5.3.0",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tsconfig/svelte": "5.0.8",
+    "dompurify": "3.4.16",
+    "maplibre-gl": "6.13.0",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.6",
+    "typescript": "5.9.3",
+    "vite": "8.3.4"
+  }
+}

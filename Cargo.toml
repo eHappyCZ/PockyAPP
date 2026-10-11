@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["core/pocky-core", "core/pocky-ffi", "core/uniffi-bindgen"]
+members = ["core/pocky-core", "core/pocky-ffi", "core/pocky-web", "core/uniffi-bindgen"]
 
 [workspace.package]
 version = "0.9.5"

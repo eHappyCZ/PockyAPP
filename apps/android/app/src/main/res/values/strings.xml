@@ -40,7 +40,13 @@
     <string name="error_invalid_credentials">Nesprávné jméno nebo heslo.</string>
     <string name="error_user_deactivated">Tento účet byl deaktivován.</string>
     <string name="error_rate_limited">Příliš mnoho pokusů. Zkus to za chvíli.</string>
-    <string name="error_network">Server není dostupný. Zkontroluj připojení.</string>
+    <string name="error_network">Server není dostupný. Zkontroluj adresu serveru a připojení.</string>
+    <string name="error_server_not_found">Takový Matrix server se nepodařilo najít.</string>
+    <string name="error_password_login_unsupported">Tenhle server nepovoluje přihlášení heslem.</string>
+    <string name="login_server_title">Matrix server</string>
+    <string name="login_server_hint">Jméno serveru z adresy účtu, třeba example.org, nebo přímá adresa https://…</string>
+    <string name="login_server_use">Použít</string>
+    <string name="login_server_checking">Ověřuji…</string>
     <string name="error_session_expired">Přihlášení vypršelo. Přihlas se znovu.</string>
     <string name="error_unknown">Něco se pokazilo. Zkus to znovu.</string>
     <string name="back">Zpět</string>

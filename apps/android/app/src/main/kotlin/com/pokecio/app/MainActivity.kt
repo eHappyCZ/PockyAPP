@@ -142,10 +142,16 @@ class MainActivity : FragmentActivity() {
 
                     is AppState.LoggedOut -> {
                         SecureWindow(enabled = true)
+                        val server by viewModel.server.collectAsStateWithLifecycle()
+                        val serverCheck by viewModel.serverCheck.collectAsStateWithLifecycle()
                         LoginScreen(
                             busy = current.busy,
                             error = current.error,
+                            server = server,
+                            serverCheck = serverCheck,
                             onLogin = viewModel::login,
+                            onCheckServer = viewModel::checkServer,
+                            onCloseServer = viewModel::clearServerCheck,
                         )
                     }
 

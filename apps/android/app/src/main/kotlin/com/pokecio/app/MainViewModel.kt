@@ -1,6 +1,7 @@
 package com.pokecio.app
 
 import android.app.Application
+import android.content.Context
 import android.os.Build
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
@@ -10,6 +11,8 @@ import com.pokecio.app.core.PockyClient
 import com.pokecio.app.core.PockyException
 import com.pokecio.app.core.TimelineItem
 import com.pokecio.app.core.TimelineItemKind
+import com.pokecio.app.core.checkServer as findServer
+import com.pokecio.app.core.defaultServer
 import com.pokecio.app.encryption.DevicesController
 import com.pokecio.app.encryption.EncryptionController
 import com.pokecio.app.location.LiveLocationController
@@ -38,6 +41,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 enum class Overlay { RECOVERY, SETUP_BACKUP, RESET_IDENTITY }
+
+sealed interface ServerCheck {
+    data object Idle : ServerCheck
+    data object Checking : ServerCheck
+    data class Failed(@StringRes val message: Int) : ServerCheck
+}
 
 sealed interface AppState {
     data object Loading : AppState
@@ -87,13 +96,40 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { restore() }
     }
 
+    private val loginPrefs = app.getSharedPreferences("login", Context.MODE_PRIVATE)
+
+    private val _server = MutableStateFlow(loginPrefs.getString("server", null) ?: defaultServer())
+    val server: StateFlow<String> = _server.asStateFlow()
+
+    private val _serverCheck = MutableStateFlow<ServerCheck>(ServerCheck.Idle)
+    val serverCheck: StateFlow<ServerCheck> = _serverCheck.asStateFlow()
+
+    fun checkServer(input: String) {
+        if (_serverCheck.value == ServerCheck.Checking) return
+        _serverCheck.value = ServerCheck.Checking
+        viewModelScope.launch {
+            _serverCheck.value = try {
+                val info = findServer(input.ifBlank { defaultServer() })
+                _server.value = info.server
+                loginPrefs.edit().putString("server", info.server).apply()
+                ServerCheck.Idle
+            } catch (e: PockyException) {
+                ServerCheck.Failed(e.messageRes())
+            }
+        }
+    }
+
+    fun clearServerCheck() {
+        if (_serverCheck.value != ServerCheck.Checking) _serverCheck.value = ServerCheck.Idle
+    }
+
     fun login(username: String, password: String) {
         if (_state.value !is AppState.LoggedOut) return
         _state.value = AppState.LoggedOut(busy = true)
 
         viewModelScope.launch {
             try {
-                val fresh = clients.login(username, password, deviceName())
+                val fresh = clients.login(username, password, deviceName(), _server.value)
                 client = fresh
                 enterLoggedIn(fresh)
             } catch (e: PockyException) {
@@ -353,9 +389,11 @@ private fun senders(items: List<TimelineItem>): List<String> =
 
 @StringRes
 private fun PockyException.messageRes(): Int = when (this) {
+    is PockyException.PasswordLoginUnsupported -> R.string.error_password_login_unsupported
+    is PockyException.ServerNotFound -> R.string.error_server_not_found
     is PockyException.InvalidCredentials -> R.string.error_invalid_credentials
     is PockyException.UserDeactivated -> R.string.error_user_deactivated
     is PockyException.RateLimited -> R.string.error_rate_limited
-    is PockyException.ServerNotFound, is PockyException.Network -> R.string.error_network
+    is PockyException.Network -> R.string.error_network
     else -> R.string.error_unknown
 }

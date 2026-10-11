@@ -24,9 +24,9 @@ class ClientHolder(context: Context) {
 
     suspend fun hasSession(): Boolean = io { sessions.loadSession() != null }
 
-    suspend fun login(username: String, password: String, deviceName: String): PockyClient = lock.withLock {
+    suspend fun login(username: String, password: String, deviceName: String, server: String): PockyClient = lock.withLock {
         val passphrase = io { sessions.databasePassphrase() }
-        val fresh = createClient(matrixDir, passphrase)
+        val fresh = createClient(matrixDir, passphrase, server)
         replace(fresh)
         try {
             val session = fresh.login(username, password, deviceName)

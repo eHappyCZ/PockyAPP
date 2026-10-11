@@ -65,6 +65,8 @@ pub enum PockyError {
     RateLimited,
     #[error("homeserver could not be found")]
     ServerNotFound,
+    #[error("the server does not allow signing in with a password")]
+    PasswordLoginUnsupported,
     #[error("network error: {0}")]
     Network(String),
     #[error("not logged in")]
@@ -96,6 +98,7 @@ impl From<CoreError> for PockyError {
             CoreError::UserDeactivated => Self::UserDeactivated,
             CoreError::RateLimited => Self::RateLimited,
             CoreError::ServerNotFound => Self::ServerNotFound,
+            CoreError::PasswordLoginUnsupported => Self::PasswordLoginUnsupported,
             CoreError::Network(msg) => Self::Network(msg),
             CoreError::NotLoggedIn => Self::NotLoggedIn,
             CoreError::InvalidSession(msg) => Self::InvalidSession(msg),
@@ -820,13 +823,30 @@ pub fn core_version() -> String {
 pub async fn create_client(
     data_dir: String,
     passphrase: Option<String>,
+    server: Option<String>,
 ) -> Result<Arc<PockyClient>, PockyError> {
-    build(
-        Server::Discover(pocky_core::SERVER_NAME),
-        data_dir,
-        passphrase,
-    )
-    .await
+    let server = pocky_core::normalize_server(server.as_deref().unwrap_or_default());
+    build(Target::Name(server), data_dir, passphrase).await
+}
+
+#[derive(Debug, Clone, uniffi::Record)]
+pub struct ServerInfo {
+    pub server: String,
+    pub homeserver_url: String,
+}
+
+#[uniffi::export]
+pub fn default_server() -> String {
+    pocky_core::SERVER_NAME.to_owned()
+}
+
+#[uniffi::export]
+pub async fn check_server(server: String) -> Result<ServerInfo, PockyError> {
+    let check = run(async move { pocky_core::check_server(&server).await }).await?;
+    Ok(ServerInfo {
+        server: check.server,
+        homeserver_url: check.homeserver_url,
+    })
 }
 
 #[uniffi::export]
@@ -847,8 +867,14 @@ pub async fn restore_client(
     Ok(PockyClient::new(client, path))
 }
 
+enum Target {
+    Name(String),
+    #[cfg(test)]
+    Url(&'static str),
+}
+
 async fn build(
-    server: Server<'static>,
+    target: Target,
     data_dir: String,
     passphrase: Option<String>,
 ) -> Result<Arc<PockyClient>, PockyError> {
@@ -856,6 +882,11 @@ async fn build(
 
     let store = path.clone();
     let client = run(async move {
+        let server = match &target {
+            Target::Name(name) => Server::Discover(name),
+            #[cfg(test)]
+            Target::Url(url) => Server::Url(url),
+        };
         pocky_core::delete_store(&store).await?;
         pocky_core::build_client(server, &store, passphrase.as_deref()).await
     })
@@ -868,7 +899,7 @@ async fn build(
 mod tests {
     use super::*;
 
-    const TEST_SERVER: Server<'static> = Server::Url("https://matrix.example.org");
+    const TEST_SERVER: Target = Target::Url("https://matrix.example.org");
 
     fn block_on<F: Future>(future: F) -> F::Output {
         tokio::runtime::Builder::new_current_thread()
