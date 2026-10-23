@@ -15,7 +15,16 @@
     first,
     showSender,
     actions,
-  }: { event: EventEntry; first: boolean; showSender: boolean; actions: MessageActions } = $props();
+    canPin,
+    pinned,
+  }: {
+    event: EventEntry;
+    first: boolean;
+    showSender: boolean;
+    actions: MessageActions;
+    canPin: boolean;
+    pinned: boolean;
+  } = $props();
 
   const quickReactions = ["❤️", "👍", "😂", "😮", "😢", "🔥"];
 
@@ -75,6 +84,13 @@
           {/if}
           <button type="button" title="Přeposlat" onclick={(e) => { e.stopPropagation(); run(() => actions.forward(event)); }}><Icon name="forward" size={17} /></button>
           <button type="button" title="Informace o zprávě" onclick={(e) => { e.stopPropagation(); run(() => actions.info(event)); }}><Icon name="info" size={17} /></button>
+          {#if canPin}
+            <button type="button" title={pinned ? "Odepnout" : "Připnout"} onclick={(e) => { e.stopPropagation(); run(() => actions.pin(event)); }}><Icon name="pin" size={17} /></button>
+          {/if}
+          {#if !event.isOwn}
+            <button type="button" title="Nahlásit" onclick={(e) => { e.stopPropagation(); run(() => actions.report(event)); }}><Icon name="alert" size={17} /></button>
+            <button type="button" title="Blokovat odesílatele" onclick={(e) => { e.stopPropagation(); run(() => actions.block(event)); }}><Icon name="eye-off" size={17} /></button>
+          {/if}
           {#if event.canRedact}
             <button type="button" class="danger" title="Smazat" onclick={(e) => { e.stopPropagation(); run(() => actions.remove(event)); }}><Icon name="trash" size={17} /></button>
           {/if}
@@ -203,6 +219,7 @@
   .own .bubble {
     background: var(--bubble-out);
     border-color: transparent;
+    color: #fff;
   }
 
   .first:not(.own) .bubble {
@@ -354,7 +371,7 @@
   }
 
   .shield.danger {
-    color: #f87171;
+    color: var(--danger);
   }
 
   .tick.read {
@@ -441,7 +458,7 @@
   }
 
   .toolbar .danger:hover {
-    color: #f87171;
+    color: var(--danger);
   }
 
   .sep {

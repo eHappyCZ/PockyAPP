@@ -85,7 +85,8 @@ vlastní.
   z jiných domén (`Access-Control-Allow-Origin: *`).
 - Homeserver odpovídá na `/_matrix/client/versions` z prohlížeče (Synapse hlavičky CORS posílá
   sám).
-- Přihlášení heslem je zapnuté. Registrace zatím probíhá mimo aplikaci.
+- Přihlášení heslem je zapnuté. Aby se lidé mohli registrovat z aplikace, zapni registrační tokeny (`registration_requires_token: true`) a rozdávej kódy.
+- Mizející zprávy potřebují retention v Synapse (viz níže).
 
 ## Co webová aplikace ukládá
 
@@ -98,3 +99,23 @@ heslem, které je v klíči WebCrypto bez možnosti exportu. Odhlášení vše s
 I aplikace pro Android se umí přihlásit k jinému serveru (Server · Změnit na přihlašovací
 obrazovce). Oznámení pak dál chodí přes push bránu Pokecio (dostane jen ID události a místnosti,
 nikdy obsah zprávy) a mapy jsou z `maps.pokecio.com`.
+
+## Mizející zprávy
+
+Aplikace jen nastaví v místnosti událost `m.room.retention`. Zprávy opravdu maže server, takže
+v `homeserver.yaml` musí být zapnuté retention:
+
+```yaml
+retention:
+  enabled: true
+  allowed_lifetime_min: 1h
+  allowed_lifetime_max: 7d
+  purge_jobs:
+    - longest_max_lifetime: 3d
+      interval: 5m
+    - shortest_max_lifetime: 3d
+      interval: 12h
+```
+
+Interval úlohy určuje, jak brzy po uplynutí doby zpráva skutečně zmizí. Pro hodinové zprávy
+nastav krátký interval, jak je vidět výše.

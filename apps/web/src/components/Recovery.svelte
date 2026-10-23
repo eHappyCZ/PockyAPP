@@ -156,6 +156,6 @@
 
   .error {
     margin: 8px 0 0;
-    color: #f87171;
+    color: var(--danger);
   }
 </style>

@@ -172,6 +172,9 @@ export interface MessageActions {
   openImage: (event: EventEntry) => void;
   info: (event: EventEntry) => void;
   forward: (event: EventEntry) => void;
+  pin: (event: EventEntry) => void;
+  report: (event: EventEntry) => void;
+  block: (event: EventEntry) => void;
 }
 
 export type TrustLevel = "noIdentity" | "unverified" | "verified" | "verificationBroken";
@@ -296,4 +299,12 @@ export interface RoomInfo {
   canEditTopic: boolean;
   canEditAvatar: boolean;
   canInvite: boolean;
+}
+
+export interface PinnedMessage {
+  eventId: string;
+  senderId: string;
+  senderName?: string;
+  timestampMs: number;
+  content: PreviewContent;
 }

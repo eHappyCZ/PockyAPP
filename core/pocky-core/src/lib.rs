@@ -125,6 +125,6 @@ mod tests {
 
     #[test]
     fn version_matches_package() {
-        assert_eq!(version(), "0.9.5");
+        assert_eq!(version(), "0.10.0");
     }
 }

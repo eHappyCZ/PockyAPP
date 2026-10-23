@@ -2679,7 +2679,7 @@ dependencies = [
 
 [[package]]
 name = "pocky-core"
-version = "0.9.5"
+version = "0.10.0"
 dependencies = [
  "eyeball-im",
  "futures-util",
@@ -2702,7 +2702,7 @@ dependencies = [
 
 [[package]]
 name = "pocky-ffi"
-version = "0.9.5"
+version = "0.10.0"
 dependencies = [
  "jni",
  "pocky-core",
@@ -2716,7 +2716,7 @@ dependencies = [
 
 [[package]]
 name = "pocky-web"
-version = "0.9.5"
+version = "0.10.0"
 dependencies = [
  "console_error_panic_hook",
  "futures-util",
@@ -4228,7 +4228,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi-bindgen"
-version = "0.9.5"
+version = "0.10.0"
 dependencies = [
  "uniffi",
 ]

@@ -97,7 +97,7 @@
   }
 
   .error {
-    color: #f87171;
+    color: var(--danger);
   }
 
   .buttons {

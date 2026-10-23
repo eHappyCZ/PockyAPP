@@ -34,7 +34,7 @@ async function dropStores(keep?: string): Promise<void> {
 
 let pending: { client: PockyClient; store: string; passphrase: string; server: string } | null = null;
 
-export async function signIn(username: string, password: string, server: string): Promise<PockyClient> {
+async function pendingClient(server: string) {
   if (pending && pending.server !== server) {
     pending.client.free();
     pending = null;
@@ -45,9 +45,25 @@ export async function signIn(username: string, password: string, server: string)
     const passphrase = hex(random(32));
     pending = { client: await core.createClient(store, passphrase, server), store, passphrase, server };
   }
+  return pending;
+}
 
-  const { client, store, passphrase } = pending;
+export async function signIn(username: string, password: string, server: string): Promise<PockyClient> {
+  const { client, store, passphrase } = await pendingClient(server);
   const session = await client.login(username, password, deviceName());
+  await vault.save({ session, store, passphrase });
+  pending = null;
+  return client;
+}
+
+export async function signUp(
+  username: string,
+  password: string,
+  inviteCode: string,
+  server: string,
+): Promise<PockyClient> {
+  const { client, store, passphrase } = await pendingClient(server);
+  const session = await client.register(username, password, inviteCode, deviceName());
   await vault.save({ session, store, passphrase });
   pending = null;
   return client;

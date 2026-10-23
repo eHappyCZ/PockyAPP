@@ -60,7 +60,7 @@
   }
 
   .warn {
-    color: #f87171;
+    color: var(--danger);
   }
 
   p {

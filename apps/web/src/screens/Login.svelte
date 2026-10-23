@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from "../components/Icon.svelte";
   import Logo from "../components/Logo.svelte";
-  import { signIn } from "../lib/account";
+  import { signIn, signUp } from "../lib/account";
   import { config } from "../lib/config";
   import { loadCore, type PockyClient } from "../lib/core";
   import { errorText } from "../lib/text";
@@ -10,6 +10,8 @@
 
   let username = $state("");
   let password = $state("");
+  let inviteCode = $state("");
+  let registering = $state(false);
   let showPassword = $state(false);
   let busy = $state(false);
   let error = $state("");
@@ -65,7 +67,12 @@
     if (notice) error = notice;
   });
 
-  const ready = $derived(username.trim().length > 0 && password.length > 0 && !busy);
+  const ready = $derived(
+    username.trim().length > 0 &&
+      password.length > (registering ? 7 : 0) &&
+      (!registering || inviteCode.trim().length > 0) &&
+      !busy,
+  );
 
   async function submit(event: SubmitEvent) {
     event.preventDefault();
@@ -74,8 +81,14 @@
     busy = true;
     error = "";
     try {
-      onSignedIn(await signIn(username.trim(), password, activeServer));
+      const name = username.trim();
+      onSignedIn(
+        registering
+          ? await signUp(name, password, inviteCode.trim(), activeServer)
+          : await signIn(name, password, activeServer),
+      );
       password = "";
+      inviteCode = "";
     } catch (err) {
       error = errorText(err);
     } finally {
@@ -94,8 +107,10 @@
       </div>
     </div>
 
-    <h1>Chat, který <span>žije</span>.</h1>
-    <p class="subtitle">Přihlas se svým Matrix účtem.</p>
+    <h1>{#if registering}Vytvoř si účet{:else}Chat, který <span>žije</span>{/if}.</h1>
+    <p class="subtitle">
+      {registering ? "Zvol si jméno a heslo a vlož pozvánkový kód." : "Přihlas se svým Matrix účtem."}
+    </p>
 
     <label for="username">Přezdívka nebo uživatelské jméno</label>
     <div class="field">
@@ -121,7 +136,7 @@
         id="password"
         type={showPassword ? "text" : "password"}
         bind:value={password}
-        autocomplete="current-password"
+        autocomplete={registering ? "new-password" : "current-password"}
         disabled={busy}
       />
       <button
@@ -134,15 +149,42 @@
       </button>
     </div>
 
+    {#if registering}
+      <label for="invite">Pozvánkový kód</label>
+      <div class="field">
+        <input
+          id="invite"
+          bind:value={inviteCode}
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="kód"
+          disabled={busy}
+        />
+      </div>
+      <p class="hint">Kód ti pošle správce serveru. Na pokecio.com ho dostaneš na reg@pokecio.com. Heslo aspoň 8 znaků.</p>
+    {/if}
+
     {#if error}
       <p class="error" role="alert"><Icon name="alert-circle" size={18} />{error}</p>
     {/if}
 
     <button class="submit" type="submit" disabled={!ready}>
-      {busy ? "Přihlašuji…" : "Přihlásit se"}
+      {#if registering}{busy ? "Zakládám účet…" : "Vytvořit účet"}{:else}{busy ? "Přihlašuji…" : "Přihlásit se"}{/if}
     </button>
 
-    <p class="register">Nemáš účet? <span>Vytvořit účet</span></p>
+    <p class="register">
+      {registering ? "Už máš účet?" : "Nemáš účet?"}
+      <button
+        type="button"
+        class="switch"
+        disabled={busy}
+        onclick={() => {
+          registering = !registering;
+          error = "";
+        }}
+      >{registering ? "Přihlásit se" : "Vytvořit účet"}</button>
+    </p>
 
     {#if editingServer}
       <div class="server-form">
@@ -312,7 +354,7 @@
     align-items: center;
     gap: 8px;
     margin: -4px 0 16px;
-    color: #f87171;
+    color: var(--danger);
     font-size: 0.92rem;
   }
 
@@ -337,9 +379,16 @@
     margin: 22px 0;
   }
 
-  .register span {
+  .switch {
+    padding: 0;
+    border: 0;
+    background: none;
     color: var(--accent-soft);
+    font: inherit;
     font-weight: 600;
+  }
+
+  .switch:disabled {
     opacity: 0.6;
   }
 

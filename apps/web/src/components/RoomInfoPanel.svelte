@@ -65,6 +65,32 @@
     return `${count} členů`;
   }
 
+  const lifetimes = [
+    { value: "", label: "Vypnuto" },
+    { value: "3600", label: "Po 1 hodině" },
+    { value: "86400", label: "Po 1 dni" },
+    { value: "604800", label: "Po 7 dnech" },
+  ];
+
+  let canSetLifetime = $state(false);
+  let lifetime = $state("");
+
+  async function loadLifetime() {
+    try {
+      canSetLifetime = await client.canSetMessageLifetime(room.id);
+      const seconds = await client.messageLifetime(room.id);
+      lifetime = seconds === undefined || seconds === null ? "" : seconds <= 3600 ? "3600" : seconds <= 86400 ? "86400" : "604800";
+    } catch {
+      canSetLifetime = false;
+    }
+  }
+
+  function changeLifetime() {
+    act(async () => {
+      await client.setMessageLifetime(room.id, lifetime ? Number(lifetime) : undefined);
+    });
+  }
+
   function load() {
     return client
       .roomInfo(room.id)
@@ -77,6 +103,7 @@
 
   onMount(() => {
     load();
+    loadLifetime();
     if (room.isDirect && room.isEncrypted && room.directUserId) {
       client
         .userTrust(room.directUserId)
@@ -280,6 +307,18 @@
       </ul>
     {/if}
 
+    {#if canSetLifetime}
+      <label class="lifetime">
+        <span><Icon name="clock" size={18} />Mizející zprávy</span>
+        <select bind:value={lifetime} onchange={changeLifetime} disabled={busy}>
+          {#each lifetimes as option (option.value)}
+            <option value={option.value}>{option.label}</option>
+          {/each}
+        </select>
+      </label>
+      <p class="lifetime-note">Server zprávy po uplynutí doby smaže. Platí pro všechny v konverzaci.</p>
+    {/if}
+
     <button class="leave" onclick={() => confirm.showModal()} disabled={busy}>
       <Icon name="logout" size={18} />Opustit
     </button>
@@ -408,7 +447,7 @@
   }
 
   .trust.broken {
-    color: #f87171;
+    color: var(--danger);
   }
 
   .actions {
@@ -433,11 +472,45 @@
   .leave {
     width: 100%;
     margin-top: 20px;
-    color: #f87171;
+    color: var(--danger);
+  }
+
+  .lifetime {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-weight: 600;
+  }
+
+  .lifetime span {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .lifetime select {
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+  }
+
+  .lifetime-note {
+    margin: 6px 4px 0;
+    color: var(--ink-muted);
+    font-size: 0.8rem;
   }
 
   .error {
-    color: #f87171;
+    color: var(--danger);
     font-size: 0.85rem;
   }
 

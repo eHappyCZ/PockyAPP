@@ -2,7 +2,7 @@
   "name": "pockyapp-web",
   "private": true,
   "type": "module",
-  "version": "0.9.5",
+  "version": "0.10.0",
   "scripts": {
     "core": "../../scripts/build-web-core.sh",
     "dev": "vite",

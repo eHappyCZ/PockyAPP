@@ -226,7 +226,7 @@
   }
 
   .meter[data-level="1"] span:nth-child(-n + 1) {
-    background: #f87171;
+    background: var(--danger);
   }
 
   .meter[data-level="2"] span:nth-child(-n + 2) {
@@ -252,7 +252,7 @@
 
   .error {
     margin-top: -6px;
-    color: #f87171;
+    color: var(--danger);
   }
 
   .buttons {

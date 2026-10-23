@@ -256,7 +256,7 @@
 
   .error {
     margin: 0 0 10px;
-    color: #f87171;
+    color: var(--danger);
     font-size: 0.85rem;
   }
 

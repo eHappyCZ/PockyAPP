@@ -46,6 +46,11 @@
 | 40 | Libovolný Matrix server: výběr serveru při přihlášení na webu i v Androidu, konfigurace webu pro vlastní nasazení, návod self-hosting, webová aplikace ve veřejném repozitáři |
 | 41 | Web dohnal Android: úprava profilu, zakládání a správa skupin, víc fotek najednou a plná kvalita, video, hlasovky s náhledem, štíty u zpráv, ověřování lidí, pruh při změně identity, informace o zprávě, přeposílání, album chatu, záloha klíčů, změna fráze a hesla, nová identita, smazání účtu, přesnost polohy, vzhled s aurou, instalace jako aplikace (PWA) |
 | 42 | iOS: sestavení jádra do XCFramework, Swift bindingy z UniFFI, balíček `PockyCore`, kostra SwiftUI aplikace (XcodeGen), přihlášení s výběrem serveru, session v Keychainu, seznam chatů |
+| 43 | Bezpečnostní audit: nepodepsaný balíček aktualizace se odmítne, stahování nejde přesměrovat mimo pokecio.com, PIN s 600 000 iteracemi a porovnáním v konstantním čase (staré PINy se převedou při odemčení), s aktivním zámkem nejde odpovídat z oznámení, rozšifrované přílohy se z mezipaměti mažou při startu |
+| 44 | Světlý motiv na Androidu i webu, volba Podle systému, Světlý, Tmavý |
+| 45 | Angličtina v Androidu, jazyk podle telefonu nebo volba v Já · Jazyk |
+| 46 | Vytvoření účtu v aplikaci s pozvánkovým kódem na Androidu i webu |
+| 47 | Blokování lidí a nahlašování zpráv, připnuté zprávy, mizející zprávy přes retention na serveru, hledání emoji podle názvu (Android), obojí i na webu kromě emoji |
 
 ## V plánu
 
@@ -55,14 +60,8 @@ Pořadí v rámci skupin odpovídá prioritě. Čísla kroků se přidělí, až
 
 | Funkce | Poznámka |
 |---|---|
-| Blokování lidí a nahlašování zpráv | pro komunitu nutnost, nahlášení jde správci serveru |
-| Mizející zprávy | 1 hodina, 1 den, 7 dní |
 | Hledání v chatu | dnes „Připravujeme“ v menu chatu |
-| Připnuté zprávy | připnutí v menu zprávy, přehled v informacích o chatu |
 | Sdílení šifrované historie s novými členy skupiny | nový člen uvidí i starší zprávy |
-| Světlý motiv | dnes jen tmavý |
-| Angličtina v aplikaci | texty jsou připravené v `strings.xml`, chybí překlad |
-| Hledání emoji podle názvu | ve výběru emoji pro reakce |
 
 ### Webová aplikace
 
@@ -83,7 +82,6 @@ Pořadí v rámci skupin odpovídá prioritě. Čísla kroků se přidělí, až
 | Hlasové a videohovory | Element Call / MatrixRTC, dnes „Připravujeme“ v hlavičce chatu |
 | Timeline | veřejná nástěnka komunity, dnes „Připravujeme“ ve spodní liště |
 | Novinky | dnes „Připravujeme“ ve spodní liště |
-| Registrace účtu v aplikaci | dnes jen přihlášení k existujícímu účtu |
 | Soukromé přezdívky a vlastní pozadí chatu | jen v zařízení |
 
 ### Platformy
@@ -102,6 +100,7 @@ Pořadí v rámci skupin odpovídá prioritě. Čísla kroků se přidělí, až
 
 ### Čeká na ověření v praxi
 
+- 0.10.0: světlý motiv, angličtina, registrace s kódem a mizející zprávy (potřebují zapnuté retention v Synapse, viz Vlastní nasazení webové aplikace),
 - zámek aplikace s otiskem, GIFy z klávesnice, zákaz snímků v přehledu aplikací (0.9.5-Fix #6),
 - odemčení zálohy jen bezpečnostní frází na novém zařízení, změna fráze na vlastním účtu,
 - reset šifrovací identity, potvrzení přečtení ve skupině, živá poloha na pozadí se dvěma účty,

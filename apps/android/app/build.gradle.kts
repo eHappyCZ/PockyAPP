@@ -12,8 +12,8 @@ android {
         applicationId = "com.pokecio.app"
         minSdk = 28
         targetSdk = 36
-        versionCode = 912
-        versionName = "0.9.5-Fix #7"
+        versionCode = 913
+        versionName = "0.10.0 - BETA"
 
         ndk {
             abiFilters += providers.environmentVariable("POCKY_ABIS")

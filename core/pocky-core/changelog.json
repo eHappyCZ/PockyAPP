@@ -1,5 +1,46 @@
 [
   {
+    "id": "0.10.0",
+    "version": "0.10.0",
+    "versionCode": 913,
+    "channel": "BETA",
+    "date": "2026-10-16",
+    "new": {
+      "cs": [
+        "Světlý motiv, volba v Já · Motiv (podle systému, světlý nebo tmavý)",
+        "Aplikace je i v angličtině, jazyk jde zvolit v Já · Jazyk",
+        "Vytvoření účtu přímo v aplikaci s pozvánkovým kódem",
+        "Blokování lidí, nahlášení zprávy správci serveru a seznam blokovaných v nastavení",
+        "Připnuté zprávy: pruh nad chatem a seznam všech připnutých",
+        "Mizející zprávy v informacích o chatu: po 1 hodině, 1 dni nebo 7 dnech",
+        "Hledání emoji podle názvu ve výběru reakcí"
+      ],
+      "en": [
+        "Light theme, set under Me · Theme (follow system, light or dark)",
+        "The app is also in English, set the language under Me · Language",
+        "Create an account right in the app with an invitation code",
+        "Block people, report a message to the server admin and a list of blocked people in settings",
+        "Pinned messages: a bar above the chat and a list of everything pinned",
+        "Disappearing messages in chat info: after 1 hour, 1 day or 7 days",
+        "Search emoji by name in the reaction picker"
+      ]
+    },
+    "fixed": {
+      "cs": [
+        "Bezpečnější aktualizace: stažení nejde přesměrovat mimo pokecio.com a nepodepsaný balíček se odmítne",
+        "Zámek aplikace: PIN se hlídá důkladněji a vyšší počet iterací chrání před hádáním",
+        "S aktivním zámkem už nejde odpovídat z oznámení",
+        "Rozšifrované přílohy v mezipaměti se mažou při každém spuštění"
+      ],
+      "en": [
+        "Safer updates: a download cannot be redirected away from pokecio.com and an unsigned package is refused",
+        "App lock: the PIN is checked more carefully and a higher iteration count protects against guessing",
+        "Replying from a notification is no longer possible while the app lock is on",
+        "Decrypted attachments in the cache are deleted on every start"
+      ]
+    }
+  },
+  {
     "id": "0.9.5-fix7",
     "version": "0.9.5-Fix #7",
     "versionCode": 912,

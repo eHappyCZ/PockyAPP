@@ -188,7 +188,7 @@
 
   .error {
     margin: 0 20px 6px;
-    color: #f87171;
+    color: var(--danger);
     font-size: 0.88rem;
   }
 </style>

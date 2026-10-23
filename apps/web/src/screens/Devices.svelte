@@ -327,7 +327,7 @@
     border: 1px solid var(--line);
     background: none;
     font-weight: 600;
-    color: #f87171;
+    color: var(--danger);
   }
 
   .switch {
@@ -469,7 +469,7 @@
   }
 
   .error {
-    color: #f87171 !important;
+    color: var(--danger) !important;
   }
 
   .buttons {

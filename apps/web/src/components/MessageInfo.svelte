@@ -153,7 +153,7 @@
   }
 
   .state.danger {
-    color: #f87171;
+    color: var(--danger);
   }
 
   h3 {

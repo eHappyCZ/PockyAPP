@@ -505,7 +505,7 @@
 
   .voice.live {
     padding-left: 16px;
-    border-color: color-mix(in srgb, #f87171 50%, transparent);
+    border-color: color-mix(in srgb, var(--danger) 50%, transparent);
   }
 
   .dot {
@@ -513,7 +513,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #f87171;
+    background: var(--danger);
     animation: pulse 1s ease-in-out infinite alternate;
   }
 
@@ -589,7 +589,7 @@
 
   .error {
     margin: 0 0 8px;
-    color: #f87171;
+    color: var(--danger);
     font-size: 0.85rem;
   }
 

@@ -10,9 +10,12 @@ const errors: Record<string, string> = {
   session_expired: "Přihlášení vypršelo. Přihlas se znovu.",
   invalid_recovery_key: "Klíč nebo fráze nesedí. Zkontroluj ho a zkus to znovu.",
   file_too_large: "Soubor je na server moc velký.",
-  invalid_name: "Název je prázdný nebo moc dlouhý.",
+  invalid_name: "Název je prázdný nebo moc dlouhý, nebo má nepovolené znaky.",
   weak_passphrase: "Fráze je moc slabá. Přidej slova nebo znaky.",
   weak_password: "Nové heslo musí mít aspoň 8 znaků a lišit se od starého.",
+  username_taken: "Tohle jméno je obsazené. Zkus jiné.",
+  invalid_invite_code: "Pozvánkový kód nesedí. Zkontroluj ho.",
+  registration_unavailable: "Tenhle server teď neumí založit účet z aplikace.",
 };
 
 export function errorText(err: unknown): string {

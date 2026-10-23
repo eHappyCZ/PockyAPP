@@ -9,7 +9,7 @@ class EmojiEntry(val emoji: String, val name: String)
 object EmojiSearch {
 
     private val index: List<EmojiEntry> by lazy {
-        UnicodeSet("[\p{Emoji_Presentation}]")
+        UnicodeSet("[\\p{Emoji_Presentation}]")
             .filter { it.codePointCount(0, it.length) == 1 }
             .mapNotNull { emoji ->
                 Character.getName(emoji.codePointAt(0))?.lowercase()?.let { EmojiEntry(emoji, it) }

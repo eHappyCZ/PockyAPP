@@ -9,6 +9,7 @@ cargo build -p pocky-ffi
 
 case "$(uname)" in
     Darwin) lib="target/debug/libpocky_ffi.dylib" ;;
+    MINGW*|MSYS*) lib="target/debug/pocky_ffi.dll" ;;
     *) lib="target/debug/libpocky_ffi.so" ;;
 esac
 

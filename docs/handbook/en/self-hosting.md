@@ -85,7 +85,8 @@ files and keep the security headers inside each `location` block; nginx does not
   cross-origin requests (`Access-Control-Allow-Origin: *`).
 - The homeserver answers `/_matrix/client/versions` from the browser (Synapse sends the CORS
   headers itself).
-- Password sign-in is enabled. Registration happens outside the app for now.
+- Password sign-in is enabled. To let people sign up from the app, turn on registration tokens (`registration_requires_token: true`) and hand out codes.
+- Disappearing messages need retention in Synapse (see below).
 
 ## What the web app stores
 
@@ -98,3 +99,23 @@ out deletes all of it. The app sends no analytics and loads no third-party scrip
 The Android app can sign in to another server too (Server · Change on the sign-in screen). Push
 notifications then still go through the Pokecio push gateway (it receives only the event and room
 IDs, never message content) and maps come from `maps.pokecio.com`.
+
+## Disappearing messages
+
+The app only sets an `m.room.retention` event in the room. The server does the deleting, so
+retention has to be enabled in `homeserver.yaml`:
+
+```yaml
+retention:
+  enabled: true
+  allowed_lifetime_min: 1h
+  allowed_lifetime_max: 7d
+  purge_jobs:
+    - longest_max_lifetime: 3d
+      interval: 5m
+    - shortest_max_lifetime: 3d
+      interval: 12h
+```
+
+The interval of the job decides how soon after the time is up a message really disappears. For
+messages that last an hour, use a short interval as shown above.

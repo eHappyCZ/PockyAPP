@@ -3,6 +3,7 @@
   import type { PockyClient } from "../lib/core";
   import { pickImage } from "../lib/media";
   import { errorText } from "../lib/text";
+  import { theme, type ThemeMode } from "../lib/theme.svelte";
   import Avatar from "./Avatar.svelte";
   import Icon from "./Icon.svelte";
 
@@ -20,6 +21,12 @@
     onClose: () => void;
   } = $props();
 
+  const modes: { value: ThemeMode; label: string }[] = [
+    { value: "system", label: "Podle systému" },
+    { value: "light", label: "Světlý" },
+    { value: "dark", label: "Tmavý" },
+  ];
+
   const userId = $derived(client.userId() ?? "");
 
   let draft = $state(untrack(() => name));
@@ -30,7 +37,27 @@
 
   const changed = $derived(draft.trim() !== name && draft.trim().length > 0);
 
-  onMount(() => dialog.showModal());
+  let blocked = $state<string[]>([]);
+
+  async function loadBlocked() {
+    try {
+      blocked = await client.blockedUsers();
+    } catch {
+      blocked = [];
+    }
+  }
+
+  function unblock(user: string) {
+    act(async () => {
+      await client.unblockUser(user);
+      await loadBlocked();
+    });
+  }
+
+  onMount(() => {
+    dialog.showModal();
+    loadBlocked();
+  });
 
   async function act(action: () => Promise<void>) {
     busy = true;
@@ -103,6 +130,34 @@
       <input bind:value={draft} maxlength="64" autocomplete="nickname" disabled={busy} />
     </label>
     <p class="muted">{userId}</p>
+
+    <div class="field look">
+      <span>Vzhled</span>
+      <div class="modes" role="radiogroup" aria-label="Vzhled">
+        {#each modes as option (option.value)}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={theme.mode === option.value}
+            class:active={theme.mode === option.value}
+            onclick={() => theme.select(option.value)}
+          >{option.label}</button>
+        {/each}
+      </div>
+    </div>
+
+    <div class="blocked">
+      <span>Blokovaní lidé</span>
+      {#if blocked.length === 0}
+        <p class="muted">Nikoho jsi nezablokoval(a).</p>
+      {/if}
+      {#each blocked as user (user)}
+        <div class="blocked-row">
+          <span>{user}</span>
+          <button type="button" onclick={() => unblock(user)} disabled={busy}>Odblokovat</button>
+        </div>
+      {/each}
+    </div>
 
     {#if error}<p class="error" role="alert">{error}</p>{/if}
 
@@ -180,7 +235,7 @@
   }
 
   .photo-actions .remove {
-    color: #f87171;
+    color: var(--danger);
   }
 
   .field {
@@ -206,6 +261,60 @@
     border-color: var(--accent);
   }
 
+  .look {
+    margin-top: 18px;
+  }
+
+  .blocked {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 18px;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+  }
+
+  .blocked-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--ink);
+    font-size: 0.9rem;
+  }
+
+  .blocked-row span {
+    overflow-wrap: anywhere;
+  }
+
+  .blocked-row button {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: none;
+    font-weight: 600;
+  }
+
+  .modes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .modes button {
+    padding: 9px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: none;
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+
+  .modes button.active {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+
   .muted {
     margin: 6px 0 0;
     color: var(--ink-muted);
@@ -215,7 +324,7 @@
 
   .error {
     margin: 12px 0 0;
-    color: #f87171;
+    color: var(--danger);
     font-size: 0.88rem;
   }
 

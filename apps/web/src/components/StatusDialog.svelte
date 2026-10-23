@@ -173,7 +173,7 @@
 
   .error {
     margin: 12px 0 0;
-    color: #f87171;
+    color: var(--danger);
   }
 
   .buttons {
@@ -202,7 +202,7 @@
   }
 
   .buttons .clear {
-    color: #f87171;
+    color: var(--danger);
   }
 
   button:disabled {

@@ -44,6 +44,13 @@
 | 38 | Security phrase for the key backup with a strength meter, phrase change, account password change, voice message preview before sending |
 | 39 | Screenshot blocking, app lock (PIN and biometrics), account deletion, GIFs from the keyboard and animated GIFs, date only for the latest version in the release notes |
 | 40 | Any Matrix homeserver: server choice at sign-in on the web and on Android, web deployment config, self-hosting guide, the web app in the public repository |
+| 41 | The web app caught up with Android: profile editing, group management, several photos, video, voice messages, message shields, verifying people, key backup, account deletion, installable as a PWA |
+| 42 | iOS: the core as an XCFramework, UniFFI Swift bindings, the PockyCore package, a SwiftUI app skeleton, sign-in with server choice, session in the Keychain, chat list |
+| 43 | Security audit: an unsigned update package is refused, downloads cannot be redirected away from pokecio.com, a PIN with 600000 iterations and constant-time comparison (old PINs are converted on unlock), no replying from notifications while the app lock is on, decrypted attachments are deleted from the cache on start |
+| 44 | Light theme on Android and the web: follow system, light, dark |
+| 45 | English on Android, language from the phone or the choice under Me · Language |
+| 46 | Create an account in the app with an invitation code on Android and the web |
+| 47 | Blocking people and reporting messages, pinned messages, disappearing messages through server retention, emoji search by name (Android), all but emoji search on the web too |
 
 ## Planned
 
@@ -53,14 +60,8 @@ Within each group, the order reflects priority. Step numbers are assigned when t
 
 | Feature | Note |
 |---|---|
-| Blocking people and reporting messages | a must for the community; reports go to the server admin |
-| Disappearing messages | 1 hour, 1 day, 7 days |
 | Search in a chat | "Coming soon" in the chat menu today |
-| Pinned messages | pin from the message menu, overview in chat info |
 | Sharing encrypted history with new group members | new members see older messages too |
-| Light theme | dark only today |
-| English in the app | texts are ready in `strings.xml`, the translation is missing |
-| Emoji search by name | in the emoji picker for reactions |
 
 ### Web app (catching up with Android)
 
@@ -79,7 +80,6 @@ Within each group, the order reflects priority. Step numbers are assigned when t
 | Voice and video calls | Element Call / MatrixRTC, "Coming soon" in the chat header today |
 | Timeline | public community board, "Coming soon" in the bottom bar today |
 | News | "Coming soon" in the bottom bar today |
-| Account registration in the app | today only signing in to an existing account |
 | Private nicknames and custom chat backgrounds | device only |
 
 ### Platforms

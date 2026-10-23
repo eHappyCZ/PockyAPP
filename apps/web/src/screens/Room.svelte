@@ -11,6 +11,9 @@
   import Icon from "../components/Icon.svelte";
   import Message from "../components/Message.svelte";
   import MessageInfo from "../components/MessageInfo.svelte";
+  import BlockDialog from "../components/BlockDialog.svelte";
+  import PinnedBar from "../components/PinnedBar.svelte";
+  import ReportDialog from "../components/ReportDialog.svelte";
   import type { PockyClient, RoomTimeline, Verification } from "../lib/core";
   import { type PresenceTracker, typingText } from "../lib/presence.svelte";
   import { contentText, dayLabel, errorText, shortName, stateText } from "../lib/text";
@@ -21,6 +24,7 @@
     GeoPoint,
     IdentityWarning,
     MessageActions,
+    PinnedMessage,
     Room,
     TimelineDiff,
     TimelineEntry,
@@ -62,6 +66,12 @@
 
   const groupGapMs = 5 * 60 * 1000;
 
+  $effect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => (notice = ""), 4000);
+    return () => clearTimeout(timer);
+  });
+
   let entries = $state<TimelineEntry[]>([]);
   let failed = $state(false);
   let loaded = $state(false);
@@ -78,6 +88,11 @@
   let forwarding = $state<string | null>(null);
   let warnings = $state<IdentityWarning[]>([]);
   let warningError = $state("");
+  let pinned = $state<PinnedMessage[]>([]);
+  let canPin = $state(false);
+  let reporting = $state<EventEntry | null>(null);
+  let blocking = $state<EventEntry | null>(null);
+  let notice = $state("");
 
   const images = $derived(
     entries.flatMap((entry) =>
@@ -123,7 +138,50 @@
     forward: (event) => {
       if (event.eventId) forwarding = event.eventId;
     },
+    pin: (event) => {
+      const id = event.eventId;
+      if (!id) return;
+      const action = pinned.some((message) => message.eventId === id) ? client.unpinMessage(room.id, id) : client.pinMessage(room.id, id);
+      action.then(loadPins).catch((err: unknown) => (warningError = errorText(err)));
+    },
+    report: (event) => {
+      reporting = event;
+    },
+    block: (event) => {
+      blocking = event;
+    },
   };
+
+  async function loadPins() {
+    try {
+      pinned = (await client.pinnedMessages(room.id)) as PinnedMessage[];
+      canPin = await client.canPinMessages(room.id);
+    } catch {
+      pinned = [];
+    }
+  }
+
+  function unpin(eventId: string) {
+    client.unpinMessage(room.id, eventId).then(loadPins).catch((err: unknown) => (warningError = errorText(err)));
+  }
+
+  function sendReport(reason: string) {
+    const event = reporting;
+    if (!event?.eventId) return;
+    client
+      .reportMessage(room.id, event.eventId, reason || undefined)
+      .then(() => (notice = "Zpráva byla nahlášena správci serveru."))
+      .catch((err: unknown) => (warningError = errorText(err)));
+  }
+
+  function blockSender() {
+    const event = blocking;
+    if (!event) return;
+    client
+      .blockUser(event.senderId)
+      .then(() => (notice = "Zablokováno. Zprávy od něj se přestanou zobrazovat."))
+      .catch((err: unknown) => (warningError = errorText(err)));
+  }
 
   function acknowledge(warning: IdentityWarning) {
     warningError = "";
@@ -193,6 +251,7 @@
 
   onMount(() => {
     let alive = true;
+    loadPins();
     const observer = new IntersectionObserver(
       (items) => {
         if (items.some((item) => item.isIntersecting)) loadOlder();
@@ -274,6 +333,9 @@
     </div>
   {/each}
   {#if warningError}<p class="center error">{warningError}</p>{/if}
+  {#if notice}<p class="center notice" role="status">{notice}</p>{/if}
+
+  <PinnedBar messages={pinned} {canPin} onUnpin={unpin} />
 
   <div class="scroller" bind:this={scroller} onscroll={scheduleRead}>
     <div class="content">
@@ -295,7 +357,14 @@
         {:else if kind.content.kind === "state"}
           <p class="center state">{stateText(kind.content, kind.senderName ?? shortName(kind.senderId))}</p>
         {:else}
-          <Message event={kind} {first} showSender={!room.isDirect} {actions} />
+          <Message
+            event={kind}
+            {first}
+            showSender={!room.isDirect}
+            {actions}
+            {canPin}
+            pinned={pinned.some((message) => message.eventId === kind.eventId)}
+          />
         {/if}
       {/each}
     </div>
@@ -318,6 +387,18 @@
       event={inspecting}
       encrypted={room.isEncrypted}
       onClose={() => (inspecting = null)}
+    />
+  {/if}
+
+  {#if reporting}
+    <ReportDialog onSend={sendReport} onClose={() => (reporting = null)} />
+  {/if}
+
+  {#if blocking}
+    <BlockDialog
+      name={blocking.senderName ?? shortName(blocking.senderId)}
+      onConfirm={blockSender}
+      onClose={() => (blocking = null)}
     />
   {/if}
 
@@ -481,8 +562,8 @@
   }
 
   .warning.broken {
-    background: color-mix(in srgb, #f87171 12%, transparent);
-    color: #f87171;
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+    color: var(--danger);
   }
 
   .warning span {
@@ -507,7 +588,11 @@
   }
 
   .error {
-    color: #f87171;
+    color: var(--danger);
+  }
+
+  .notice {
+    color: var(--success);
   }
 
   .room.aura {

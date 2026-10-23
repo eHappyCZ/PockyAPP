@@ -206,7 +206,7 @@
   }
 
   .row.danger > button {
-    color: #f87171;
+    color: var(--danger);
   }
 
   dialog {
@@ -274,7 +274,7 @@
 
   .error {
     margin-top: -6px;
-    color: #f87171;
+    color: var(--danger);
   }
 
   .buttons {

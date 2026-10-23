@@ -3,7 +3,7 @@ resolver = "2"
 members = ["core/pocky-core", "core/pocky-ffi", "core/pocky-web", "core/uniffi-bindgen"]
 
 [workspace.package]
-version = "0.9.5"
+version = "0.10.0"
 edition = "2021"
 authors = ["eHappyCZ"]
 license = "AGPL-3.0-only"
