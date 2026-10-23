@@ -2,6 +2,7 @@
   import type { PockyClient } from "../lib/core";
   import { errorText } from "../lib/text";
   import Icon from "./Icon.svelte";
+  import RecoveryDialog from "./RecoveryDialog.svelte";
 
   let {
     client,
@@ -20,6 +21,7 @@
   let key = $state("");
   let busy = $state(false);
   let error = $state("");
+  let resetting = $state(false);
 
   async function submit(event: SubmitEvent) {
     event.preventDefault();
@@ -65,7 +67,12 @@
     <button type="button" class="device" onclick={onVerify}>Ověřit jiným zařízením</button>
   {/if}
   {#if error}<p class="error" role="alert">{error}</p>{/if}
+  <button type="button" class="lost" onclick={() => (resetting = true)}>Nemám klíč ani jiné zařízení</button>
 </form>
+
+{#if resetting}
+  <RecoveryDialog {client} mode="reset" onDone={onDone} onClose={() => (resetting = false)} />
+{/if}
 
 <style>
   .recovery {
@@ -133,6 +140,18 @@
     background: none;
     border: 1px solid var(--line);
     color: var(--ink);
+  }
+
+  .lost {
+    height: auto;
+    margin-top: 10px;
+    padding: 0;
+    background: none;
+    color: var(--ink-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .error {

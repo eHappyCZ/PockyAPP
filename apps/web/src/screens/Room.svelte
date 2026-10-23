@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import Avatar from "../components/Avatar.svelte";
   import Composer from "../components/Composer.svelte";
+  import ForwardDialog from "../components/ForwardDialog.svelte";
   import ImageViewer from "../components/ImageViewer.svelte";
   import RoomInfoPanel from "../components/RoomInfoPanel.svelte";
   import MapDialog from "../components/MapDialog.svelte";
@@ -9,18 +10,37 @@
   import { mapsEnabled } from "../lib/config";
   import Icon from "../components/Icon.svelte";
   import Message from "../components/Message.svelte";
-  import type { PockyClient, RoomTimeline } from "../lib/core";
+  import MessageInfo from "../components/MessageInfo.svelte";
+  import type { PockyClient, RoomTimeline, Verification } from "../lib/core";
   import { type PresenceTracker, typingText } from "../lib/presence.svelte";
-  import { contentText, dayLabel, shortName, stateText } from "../lib/text";
+  import { contentText, dayLabel, errorText, shortName, stateText } from "../lib/text";
   import { applyDiffs } from "../lib/timeline";
-  import type { Draft, EventEntry, GeoPoint, MessageActions, Room, TimelineDiff, TimelineEntry } from "../lib/types";
+  import type {
+    Draft,
+    EventEntry,
+    GeoPoint,
+    IdentityWarning,
+    MessageActions,
+    Room,
+    TimelineDiff,
+    TimelineEntry,
+  } from "../lib/types";
 
   let {
     client,
     tracker,
     room,
+    rooms,
     onBack,
-  }: { client: PockyClient; tracker: PresenceTracker; room: Room; onBack: () => void } = $props();
+    onVerification,
+  }: {
+    client: PockyClient;
+    tracker: PresenceTracker;
+    room: Room;
+    rooms: Room[];
+    onBack: () => void;
+    onVerification: (verification: Verification) => void;
+  } = $props();
 
   const typists = $derived(tracker.typingIn(room.id));
   const presenceText = $derived.by(() => {
@@ -54,6 +74,10 @@
   let sendingLocation = $state(false);
   let viewing = $state<string | null>(null);
   let showInfo = $state(false);
+  let inspecting = $state<EventEntry | null>(null);
+  let forwarding = $state<string | null>(null);
+  let warnings = $state<IdentityWarning[]>([]);
+  let warningError = $state("");
 
   const images = $derived(
     entries.flatMap((entry) =>
@@ -93,7 +117,26 @@
     openImage: (event) => {
       viewing = event.itemKey;
     },
+    info: (event) => {
+      inspecting = event;
+    },
+    forward: (event) => {
+      if (event.eventId) forwarding = event.eventId;
+    },
   };
+
+  function acknowledge(warning: IdentityWarning) {
+    warningError = "";
+    client.acknowledgeIdentity(warning.userId).catch((err) => (warningError = errorText(err)));
+  }
+
+  function verify(userId: string) {
+    warningError = "";
+    client
+      .requestUserVerification(userId)
+      .then(onVerification)
+      .catch((err) => (warningError = errorText(err)));
+  }
 
   function confirmRemove() {
     const event = removing;
@@ -178,8 +221,14 @@
     const onVisible = () => scheduleRead();
     document.addEventListener("visibilitychange", onVisible);
 
+    const identities = room.isEncrypted
+      ? client.watchIdentityWarnings(room.id, (value: IdentityWarning[]) => (warnings = value))
+      : null;
+
     return () => {
       alive = false;
+      identities?.stop();
+      identities?.free();
       observer.disconnect();
       clearTimeout(readTimer);
       if (typingSent) typing(false);
@@ -191,7 +240,7 @@
 </script>
 
 <div class="shell" class:info={showInfo}>
-<section class="room">
+<section class="room" class:aura={tracker.privacy.chatStyle === "aura"}>
   <header>
     <button class="back" onclick={onBack} aria-label="Zpět"><Icon name="arrow-back" /></button>
     <Avatar id={room.id} name={room.name} url={room.avatarUrl} size={40} square={!room.isDirect} />
@@ -209,6 +258,22 @@
       <Icon name="info" />
     </button>
   </header>
+
+  {#each warnings as warning (warning.userId)}
+    <div class="warning" class:broken={warning.wasVerified} role="alert">
+      <Icon name="shield-alert" size={18} />
+      <span>
+        {#if warning.wasVerified}
+          <strong>{warning.name ?? shortName(warning.userId)} už není ověřený.</strong> Šifrovací identita se změnila. Ověř ho znovu, nebo změnu přijmi.
+        {:else}
+          <strong>{warning.name ?? shortName(warning.userId)} má novou šifrovací identitu.</strong> Mohl se přihlásit znovu, ale ověř si to.
+        {/if}
+      </span>
+      <button onclick={() => verify(warning.userId)}>Ověřit</button>
+      <button class="plain" onclick={() => acknowledge(warning)}>{warning.wasVerified ? "Přijmout" : "Rozumím"}</button>
+    </div>
+  {/each}
+  {#if warningError}<p class="center error">{warningError}</p>{/if}
 
   <div class="scroller" bind:this={scroller} onscroll={scheduleRead}>
     <div class="content">
@@ -242,6 +307,20 @@
     <ImageViewer {images} start={viewing} onClose={() => (viewing = null)} />
   {/if}
 
+  {#if forwarding}
+    <ForwardDialog {client} {rooms} fromRoom={room.id} eventIds={[forwarding]} onClose={() => (forwarding = null)} />
+  {/if}
+
+  {#if inspecting}
+    <MessageInfo
+      {client}
+      roomId={room.id}
+      event={inspecting}
+      encrypted={room.isEncrypted}
+      onClose={() => (inspecting = null)}
+    />
+  {/if}
+
   {#if shownLocation}
     <MapDialog point={shownLocation.point} title={shownLocation.title} onClose={() => (shownLocation = null)} />
   {/if}
@@ -268,12 +347,14 @@
   <RoomInfoPanel
     {client}
     {room}
+    {rooms}
     {images}
     onOpenImage={(itemKey) => {
       showInfo = false;
       viewing = itemKey;
     }}
     onLeft={onBack}
+    onVerify={verify}
     onClose={() => (showInfo = false)}
   />
 {/if}
@@ -386,6 +467,87 @@
     gap: 4px;
     font-size: 0.78rem;
     color: var(--success);
+  }
+
+  .warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--gold) 12%, transparent);
+    color: var(--gold);
+    font-size: 0.85rem;
+  }
+
+  .warning.broken {
+    background: color-mix(in srgb, #f87171 12%, transparent);
+    color: #f87171;
+  }
+
+  .warning span {
+    flex: 1;
+    color: var(--ink);
+  }
+
+  .warning button {
+    flex: none;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .warning button.plain {
+    border: 1px solid var(--line);
+    background: none;
+    color: var(--ink);
+  }
+
+  .error {
+    color: #f87171;
+  }
+
+  .room.aura {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .room.aura::before {
+    content: "";
+    position: absolute;
+    inset: -10%;
+    z-index: -1;
+    background:
+      radial-gradient(40% 35% at 20% 30%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+      radial-gradient(45% 40% at 80% 70%, color-mix(in srgb, var(--success) 12%, transparent), transparent 70%),
+      radial-gradient(35% 30% at 60% 15%, color-mix(in srgb, var(--accent-soft) 14%, transparent), transparent 70%);
+    filter: blur(24px);
+    animation: drift 18s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  .aura :global(.own .bubble) {
+    background: linear-gradient(135deg, var(--bubble-out), color-mix(in srgb, var(--accent) 80%, #ec4899));
+    box-shadow: 0 6px 22px -8px color-mix(in srgb, var(--accent) 80%, transparent);
+  }
+
+  @keyframes drift {
+    from {
+      transform: translate3d(-3%, -2%, 0) scale(1);
+    }
+    to {
+      transform: translate3d(3%, 2%, 0) scale(1.08);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .room.aura::before {
+      animation: none;
+    }
   }
 
   .scroller {

@@ -90,6 +90,7 @@ fun RoomInfoScreen(
     busy: Boolean,
     problems: Flow<Int>,
     edits: RoomInfoEdits,
+    moderation: ModerationState,
     roomActions: RoomActionHandlers,
     onGallery: () -> Unit,
     onHistory: () -> Unit,
@@ -98,6 +99,7 @@ fun RoomInfoScreen(
     val context = LocalContext.current
     var editing by rememberSaveable { mutableStateOf<InfoEdit?>(null) }
     var removing by remember { mutableStateOf<Member?>(null) }
+    var lifetimeOpen by remember { mutableStateOf(false) }
     val photo = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let(edits.onAvatar)
     }
@@ -200,6 +202,19 @@ fun RoomInfoScreen(
                     MemberRow(member, onClick = if (member.canRemove) ({ removing = member }) else null)
                 }
             }
+            if (moderation.canSetLifetime) {
+                item(key = "lifetime") {
+                    Spacer(Modifier.height(20.dp))
+                    Card {
+                        InfoRow(
+                            icon = PockyIcons.Clock,
+                            title = stringResource(R.string.lifetime_title),
+                            value = lifetimeLabel(moderation.lifetime),
+                            onClick = { lifetimeOpen = true },
+                        )
+                    }
+                }
+            }
             item(key = "leave") {
                 Spacer(Modifier.height(20.dp))
                 Card {
@@ -212,6 +227,14 @@ fun RoomInfoScreen(
                 }
             }
         }
+    }
+
+    if (lifetimeOpen) {
+        LifetimeSheet(
+            current = moderation.lifetime,
+            onSelect = moderation.onLifetime,
+            onDismiss = { lifetimeOpen = false },
+        )
     }
 
     editing?.let { field ->
@@ -290,7 +313,7 @@ private fun InfoHead(
                         .padding(3.dp)
                         .background(PockyGradient, CircleShape),
                 ) {
-                    Icon(PockyIcons.Camera, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(16.dp))
+                    Icon(PockyIcons.Camera, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(16.dp))
                 }
             }
         }
@@ -426,7 +449,13 @@ private fun Divider() {
 }
 
 @Composable
-private fun InfoRow(icon: ImageVector, title: String, tint: Color = PockyColors.Ink, onClick: () -> Unit) {
+private fun InfoRow(
+    icon: ImageVector,
+    title: String,
+    tint: Color = PockyColors.Ink,
+    value: String? = null,
+    onClick: () -> Unit,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -447,6 +476,10 @@ private fun InfoRow(icon: ImageVector, title: String, tint: Color = PockyColors.
         }
         Spacer(Modifier.width(12.dp))
         Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = tint)
+        if (value != null) {
+            Spacer(Modifier.weight(1f))
+            Text(value, style = MaterialTheme.typography.bodyMedium, color = PockyColors.InkMuted)
+        }
     }
 }
 

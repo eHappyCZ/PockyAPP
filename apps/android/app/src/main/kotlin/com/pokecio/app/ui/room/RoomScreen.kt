@@ -202,11 +202,15 @@ fun RoomScreen(
     gallery: GalleryState,
     onGalleryShown: () -> Unit,
     sharing: MediaSharingState,
+    moderation: ModerationState,
 ) {
     var leaveTarget by remember { mutableStateOf<Room?>(null) }
     var actionTarget by remember { mutableStateOf<TimelineEvent?>(null) }
     var deleteTarget by remember { mutableStateOf<TimelineEvent?>(null) }
     var infoTarget by remember { mutableStateOf<TimelineEvent?>(null) }
+    var reportTarget by remember { mutableStateOf<TimelineEvent?>(null) }
+    var blockTarget by remember { mutableStateOf<TimelineEvent?>(null) }
+    var pinnedOpen by remember { mutableStateOf(false) }
     var pickedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var pickedVideos by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var pickedFile by remember { mutableStateOf<Uri?>(null) }
@@ -300,6 +304,7 @@ fun RoomScreen(
             trust = info.trust,
             problems = info.problems,
             edits = info.edits,
+            moderation = moderation,
             roomActions = RoomActionHandlers(
                 onMarkRead = roomActions.onMarkRead,
                 onFavourite = roomActions.onFavourite,
@@ -362,6 +367,7 @@ fun RoomScreen(
                                 onLeave = { leaveTarget = it },
                             ),
                         )
+                        PinnedBar(moderation.pinned, onClick = { pinnedOpen = true })
                         AnimatedVisibility(visible = liveUntil != null) {
                             LiveBanner(until = liveUntil ?: 0L, onStop = onStopLive)
                         }
@@ -502,6 +508,22 @@ fun RoomScreen(
                 actionTarget = null
                 infoTarget = event
             },
+            pinned = moderation.pinned.any { it.eventId == event.eventId },
+            canPin = moderation.canPin,
+            onPin = {
+                actionTarget = null
+                event.eventId?.let { id ->
+                    if (moderation.pinned.any { it.eventId == id }) moderation.onUnpin(id) else moderation.onPin(id)
+                }
+            },
+            onReport = {
+                actionTarget = null
+                reportTarget = event
+            },
+            onBlock = {
+                actionTarget = null
+                blockTarget = event
+            },
             onDelete = {
                 actionTarget = null
                 deleteTarget = event
@@ -522,6 +544,31 @@ fun RoomScreen(
             receiptsOn = readReceipts,
             onDismiss = { infoTarget = null },
         )
+    }
+
+    reportTarget?.let { event ->
+        ReportDialog(
+            onSend = { reason ->
+                reportTarget = null
+                event.eventId?.let { moderation.onReport(it, reason) }
+            },
+            onDismiss = { reportTarget = null },
+        )
+    }
+
+    blockTarget?.let { event ->
+        BlockDialog(
+            name = displayName(event.senderId, event.senderName),
+            onConfirm = {
+                blockTarget = null
+                moderation.onBlock(event.senderId)
+            },
+            onDismiss = { blockTarget = null },
+        )
+    }
+
+    if (pinnedOpen) {
+        PinnedSheet(moderation, onDismiss = { pinnedOpen = false })
     }
 
     deleteTarget?.let { event ->
@@ -954,7 +1001,7 @@ private fun ScrollDownButton(unseen: Int, onClick: () -> Unit) {
                     text = if (unseen > 99) "99+" else unseen.toString(),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = PockyColors.Ink,
+                    color = PockyColors.OnBrand,
                 )
             }
         }
@@ -1431,7 +1478,7 @@ private fun NewMessagesDivider() {
             text = stringResource(R.string.new_messages),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
-            color = PockyColors.Ink,
+            color = PockyColors.OnBrand,
             modifier = Modifier
                 .padding(horizontal = 8.dp)
                 .background(PockyGradient, CircleShape)
@@ -1624,7 +1671,7 @@ private fun MicButton(onClick: () -> Unit) {
         Icon(
             imageVector = PockyIcons.Mic,
             contentDescription = stringResource(R.string.voice_record),
-            tint = PockyColors.Ink,
+            tint = PockyColors.OnBrand,
             modifier = Modifier.size(22.dp),
         )
     }
@@ -1655,7 +1702,7 @@ private fun SendButton(enabled: Boolean, editing: Boolean, onClick: () -> Unit) 
         Icon(
             imageVector = if (editing) PockyIcons.Check else PockyIcons.Send,
             contentDescription = stringResource(R.string.send),
-            tint = if (enabled) PockyColors.Ink else PockyColors.InkMuted,
+            tint = if (enabled) PockyColors.OnBrand else PockyColors.InkMuted,
             modifier = Modifier.size(22.dp),
         )
     }

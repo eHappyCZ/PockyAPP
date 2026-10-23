@@ -172,7 +172,7 @@ fun PersonRow(contact: Contact, selected: Boolean? = null, onClick: () -> Unit) 
                     ),
             ) {
                 if (selected) {
-                    Icon(PockyIcons.Check, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(15.dp))
+                    Icon(PockyIcons.Check, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(15.dp))
                 }
             }
         }

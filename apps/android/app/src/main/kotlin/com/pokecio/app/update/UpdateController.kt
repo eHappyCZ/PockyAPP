@@ -168,8 +168,8 @@ class UpdateController(private val context: Context, private val scope: Coroutin
         val archive = pm.getPackageArchiveInfo(apk.path, flags) ?: return false
         if (archive.packageName != context.packageName) return false
         val incoming = signers(archive)
-        if (incoming.isEmpty()) return true
-        return incoming == signers(pm.getPackageInfo(context.packageName, flags))
+        if (incoming.isEmpty()) return false
+        return incoming ==signers(pm.getPackageInfo(context.packageName, flags))
     }
 
     private fun signers(info: PackageInfo): Set<String> {

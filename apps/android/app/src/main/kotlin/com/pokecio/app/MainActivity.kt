@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -53,6 +54,7 @@ import com.pokecio.app.media.LocalVoicePlayer
 import com.pokecio.app.media.VideoPrep
 import com.pokecio.app.media.uriInfo
 import com.pokecio.app.rooms.RoomController
+import com.pokecio.app.preferences.AppLanguage
 import com.pokecio.app.ui.components.SecureWindow
 import com.pokecio.app.ui.components.rememberNotificationPermission
 import com.pokecio.app.ui.encryption.ChangePassphraseScreen
@@ -78,6 +80,7 @@ import com.pokecio.app.ui.layout.currentScreenSize
 import com.pokecio.app.ui.lock.AppLockSettingsScreen
 import com.pokecio.app.ui.lock.LockScreen
 import com.pokecio.app.ui.login.LoginScreen
+import com.pokecio.app.ui.login.RegisterScreen
 import com.pokecio.app.ui.map.MapTab
 import com.pokecio.app.ui.navigation.Screen
 import com.pokecio.app.ui.navigation.screenTransition
@@ -90,6 +93,7 @@ import com.pokecio.app.ui.room.GalleryState
 import com.pokecio.app.ui.room.HistoryState
 import com.pokecio.app.ui.room.LocalChatLook
 import com.pokecio.app.ui.room.MediaSharingState
+import com.pokecio.app.ui.room.ModerationState
 import com.pokecio.app.ui.room.RoomInfoEdits
 import com.pokecio.app.ui.room.RoomInfoState
 import com.pokecio.app.ui.room.RoomScreen
@@ -99,7 +103,9 @@ import com.pokecio.app.ui.rooms.InviteHandlers
 import com.pokecio.app.ui.rooms.RoomActionHandlers
 import com.pokecio.app.ui.rooms.RoomBanners
 import com.pokecio.app.ui.rooms.RoomListScreen
+import com.pokecio.app.ui.theme.Appearance
 import com.pokecio.app.ui.theme.PockyTheme
+import com.pokecio.app.ui.theme.useDarkTheme
 import com.pokecio.app.ui.update.UpdateDialog
 import com.pokecio.app.update.UpdatePhase
 import kotlinx.coroutines.flow.merge
@@ -116,9 +122,10 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) handleIntent(intent)
+        Appearance.load(this)
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
@@ -126,6 +133,17 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             PockyTheme {
+                val darkTheme = useDarkTheme()
+                DisposableEffect(darkTheme) {
+                    val bars = if (darkTheme) {
+                        SystemBarStyle.dark(Color.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                    }
+                    enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
+                    onDispose { }
+                }
+
                 val state by viewModel.state.collectAsStateWithLifecycle()
 
                 LifecycleStartEffect(viewModel) {
@@ -144,15 +162,28 @@ class MainActivity : FragmentActivity() {
                         SecureWindow(enabled = true)
                         val server by viewModel.server.collectAsStateWithLifecycle()
                         val serverCheck by viewModel.serverCheck.collectAsStateWithLifecycle()
-                        LoginScreen(
-                            busy = current.busy,
-                            error = current.error,
-                            server = server,
-                            serverCheck = serverCheck,
-                            onLogin = viewModel::login,
-                            onCheckServer = viewModel::checkServer,
-                            onCloseServer = viewModel::clearServerCheck,
-                        )
+                        var registering by rememberSaveable { mutableStateOf(false) }
+                        if (registering) {
+                            BackHandler(enabled = !current.busy) { registering = false }
+                            RegisterScreen(
+                                busy = current.busy,
+                                error = current.error,
+                                server = server,
+                                onRegister = viewModel::register,
+                                onBack = { registering = false },
+                            )
+                        } else {
+                            LoginScreen(
+                                busy = current.busy,
+                                error = current.error,
+                                server = server,
+                                serverCheck = serverCheck,
+                                onLogin = viewModel::login,
+                                onCheckServer = viewModel::checkServer,
+                                onCloseServer = viewModel::clearServerCheck,
+                                onRegister = { registering = true },
+                            )
+                        }
                     }
 
                     is AppState.LoggedIn -> {
@@ -209,6 +240,7 @@ class MainActivity : FragmentActivity() {
                                 val profileBusy by current.preferences.profileBusy.collectAsStateWithLifecycle()
 
                                 val preferences by current.preferences.preferences.collectAsStateWithLifecycle()
+                                val blocked by current.preferences.blocked.collectAsStateWithLifecycle()
                                 val chatLook = preferences?.chatStyle ?: ChatLook.CLASSIC
                                 val notifications = rememberNotificationPermission()
                                 val presence by current.presence.presence.collectAsStateWithLifecycle()
@@ -280,6 +312,13 @@ class MainActivity : FragmentActivity() {
                                         LaunchedEffect(shown) {
                                             shown.notices.collect { Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show() }
                                         }
+                                        val pinned by shown.moderation.pinned.collectAsStateWithLifecycle()
+                                        val canPin by shown.moderation.canPin.collectAsStateWithLifecycle()
+                                        val lifetime by shown.moderation.lifetime.collectAsStateWithLifecycle()
+                                        val canSetLifetime by shown.moderation.canSetLifetime.collectAsStateWithLifecycle()
+                                        LaunchedEffect(shown) {
+                                            shown.moderation.notices.collect { Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show() }
+                                        }
                                         val historyItems by shown.history.items.collectAsStateWithLifecycle()
                                         val historyLoading by shown.history.loading.collectAsStateWithLifecycle()
                                         val historyStart by shown.history.reachedStart.collectAsStateWithLifecycle()
@@ -327,6 +366,17 @@ class MainActivity : FragmentActivity() {
                                                 onSave = current.downloads::save,
                                                 onCancelSave = current.downloads::cancel,
                                                 onForward = shown::forward,
+                                            ),
+                                            moderation = ModerationState(
+                                                pinned = pinned,
+                                                canPin = canPin,
+                                                lifetime = lifetime,
+                                                canSetLifetime = canSetLifetime,
+                                                onReport = shown.moderation::report,
+                                                onBlock = shown.moderation::block,
+                                                onPin = shown.moderation::pin,
+                                                onUnpin = shown.moderation::unpin,
+                                                onLifetime = shown.moderation::setLifetime,
                                             ),
                                             history = HistoryState(
                                                 open = historyOpen,
@@ -670,6 +720,7 @@ class MainActivity : FragmentActivity() {
                                                                         busy = current.busy,
                                                                         profileBusy = profileBusy,
                                                                         problems = current.preferences.problems,
+                                                                        blocked = blocked,
                                                                         actions = SettingsActions(
                                                                             onRename = current.preferences::rename,
                                                                             onPickAvatar = { uri ->
@@ -683,6 +734,8 @@ class MainActivity : FragmentActivity() {
                                                             onSendReadReceipts = current.preferences::setSendReadReceipts,
                                                             onBlockScreenshots = current.preferences::setBlockScreenshots,
                                                                             onChatStyle = current.preferences::setChatStyle,
+                                                                            onBlockedOpen = current.preferences::loadBlocked,
+                                                                            onUnblock = current.preferences::unblock,
                                                                             onNotificationPreview = current.preferences::setNotificationPreview,
                                                                             onLocationPrecision = current.preferences::setLocationPrecision,
                                                                             onVerify = viewModel::openRecovery,
@@ -834,6 +887,7 @@ class MainActivity : FragmentActivity() {
     }
 
     override fun attachBaseContext(newBase: Context) {
+        AppLanguage.load(newBase)
         val config = Configuration(newBase.resources.configuration).apply { setLocale(AppLocale) }
         super.attachBaseContext(newBase.createConfigurationContext(config))
     }

@@ -170,6 +170,16 @@ export interface MessageActions {
   remove: (event: EventEntry) => void;
   openLocation: (point: GeoPoint, title: string) => void;
   openImage: (event: EventEntry) => void;
+  info: (event: EventEntry) => void;
+  forward: (event: EventEntry) => void;
+}
+
+export type TrustLevel = "noIdentity" | "unverified" | "verified" | "verificationBroken";
+
+export interface IdentityWarning {
+  userId: string;
+  name?: string;
+  wasVerified: boolean;
 }
 
 export interface Encryption {
@@ -177,7 +187,10 @@ export interface Encryption {
   canVerifyWithDevice: boolean;
   deviceVerified: boolean;
   backupEnabled: boolean;
+  recoveryEnabled: boolean;
 }
+
+export type PassphraseStrength = "tooShort" | "noSymbol" | "weak" | "fair" | "strong";
 
 export interface SasEmoji {
   index: number;
@@ -221,7 +234,10 @@ export interface Privacy {
   sharePresence: boolean;
   shareTyping: boolean;
   locationPrecision?: LocationPrecision;
+  chatStyle?: ChatStyle;
 }
+
+export type ChatStyle = "classic" | "aura";
 
 export type Aura = "online" | "away" | "typing" | "own";
 
@@ -276,4 +292,8 @@ export interface RoomInfo {
   isEncrypted: boolean;
   directUserId?: string;
   members: Member[];
+  canEditName: boolean;
+  canEditTopic: boolean;
+  canEditAvatar: boolean;
+  canInvite: boolean;
 }

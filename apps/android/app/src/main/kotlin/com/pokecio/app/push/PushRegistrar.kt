@@ -4,6 +4,7 @@ import android.os.Build
 import com.google.firebase.messaging.FirebaseMessaging
 import com.pokecio.app.core.PockyClient
 import com.pokecio.app.core.PockyException
+import com.pokecio.app.preferences.AppLanguage
 import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -12,7 +13,7 @@ object PushRegistrar {
     suspend fun register(client: PockyClient, token: String? = null): Boolean {
         val pushKey = token ?: fetchToken() ?: return false
         return try {
-            client.registerPusher(pushKey, deviceName(), LANGUAGE)
+            client.registerPusher(pushKey, deviceName(), AppLanguage.locale.language)
             true
         } catch (_: PockyException) {
             false
@@ -32,5 +33,4 @@ object PushRegistrar {
 
     private fun deviceName() = "PockyAPP (${Build.MODEL})"
 
-    private const val LANGUAGE = "cs"
 }

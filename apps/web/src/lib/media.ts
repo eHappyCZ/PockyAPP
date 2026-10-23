@@ -39,6 +39,27 @@ export function mediaUrl(source: string, width = 0, height = 0, type = ""): Prom
   return url;
 }
 
+export async function mediaFile(source: string, name: string): Promise<File> {
+  if (!current) throw new Error("no client");
+  const bytes = await current.loadMedia(source, 0, 0);
+  const type = sniff(bytes);
+  return new File([bytes as Uint8Array<ArrayBuffer>], name, type ? { type } : {});
+}
+
+export function pickImage(): Promise<Uint8Array | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      resolve(file ? new Uint8Array(await file.arrayBuffer()) : null);
+    };
+    input.oncancel = () => resolve(null);
+    input.click();
+  });
+}
+
 export async function download(source: string, name: string, type = "") {
   const url = await mediaUrl(source, 0, 0, type);
   const link = document.createElement("a");

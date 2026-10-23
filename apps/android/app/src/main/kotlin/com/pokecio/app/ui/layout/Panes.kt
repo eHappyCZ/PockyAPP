@@ -93,7 +93,7 @@ fun EmptyChatPane() {
                     .size(72.dp)
                     .background(PockyGradient, CircleShape),
             ) {
-                Icon(PockyIcons.Chats, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(34.dp))
+                Icon(PockyIcons.Chats, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(34.dp))
             }
             Spacer(Modifier.height(18.dp))
             Text(

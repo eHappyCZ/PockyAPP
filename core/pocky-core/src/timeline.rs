@@ -475,10 +475,10 @@ pub async fn send_voice(
     let mime: mime::Mime = mime
         .parse()
         .map_err(|_| CoreError::Media("invalid mime type".to_owned()))?;
-    let extension = if mime.subtype() == "ogg" {
-        "ogg"
-    } else {
-        "m4a"
+    let extension = match mime.subtype().as_str() {
+        "ogg" => "ogg",
+        "webm" => "webm",
+        _ => "m4a",
     };
     if bytes.is_empty() {
         return Err(CoreError::Media("empty recording".to_owned()));

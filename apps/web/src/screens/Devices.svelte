@@ -1,18 +1,39 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import AccountSecurity from "../components/AccountSecurity.svelte";
   import Icon from "../components/Icon.svelte";
   import type { PockyClient } from "../lib/core";
   import type { Alerts } from "../lib/alerts.svelte";
   import type { PresenceTracker } from "../lib/presence.svelte";
   import { formatTimestamp } from "../lib/text";
-  import type { Device } from "../lib/types";
+  import type { Device, Encryption } from "../lib/types";
 
   let {
     client,
     tracker,
     alerts,
+    encryption,
     onBack,
-  }: { client: PockyClient; tracker: PresenceTracker; alerts: Alerts; onBack: () => void } = $props();
+    onAccountDeleted,
+  }: {
+    client: PockyClient;
+    tracker: PresenceTracker;
+    alerts: Alerts;
+    encryption: Encryption | null;
+    onBack: () => void;
+    onAccountDeleted: () => void;
+  } = $props();
+
+  const styles = [
+    { id: "classic", label: "Klasický", body: "Čisté tmavé bubliny, nic navíc." },
+    { id: "aura", label: "Živý s aurou", body: "Za zprávami se vlní jemná záře, vlastní bubliny září." },
+  ] as const;
+
+  const precisions = [
+    { id: "exact", label: "Přesně", body: "Přesné místo, třeba když se hledáte v davu." },
+    { id: "neighborhood", label: "Okolí ~500 m", body: "Čtvrť nebo ulice kolem, ne konkrétní dům." },
+    { id: "city", label: "Město ~5 km", body: "Jen přibližně, ve kterém městě jsi." },
+  ] as const;
 
   function toggle(key: "sharePresence" | "shareTyping") {
     tracker.setPrivacy({ ...tracker.privacy, [key]: !tracker.privacy[key] }).catch(() => undefined);
@@ -72,7 +93,7 @@
 <section class="devices">
   <header>
     <button class="back" onclick={onBack} aria-label="Zpět"><Icon name="arrow-back" /></button>
-    <h1>Zařízení a soukromí</h1>
+    <h1>Zařízení, soukromí a zabezpečení</h1>
   </header>
 
   <div class="body">
@@ -127,6 +148,38 @@
       <input type="checkbox" checked={tracker.privacy.shareTyping} onchange={() => toggle("shareTyping")} />
     </label>
 
+    <h2>Vzhled chatu</h2>
+    <div class="choices">
+      {#each styles as option (option.id)}
+        <label class="choice" class:on={(tracker.privacy.chatStyle ?? "classic") === option.id}>
+          <input
+            type="radio"
+            name="chat-style"
+            checked={(tracker.privacy.chatStyle ?? "classic") === option.id}
+            onchange={() => tracker.setChatStyle(option.id).catch(() => undefined)}
+          />
+          <strong>{option.label}</strong>
+          <small>{option.body}</small>
+        </label>
+      {/each}
+    </div>
+
+    <h2>Přesnost odesílané polohy</h2>
+    <div class="choices">
+      {#each precisions as option (option.id)}
+        <label class="choice" class:on={(tracker.privacy.locationPrecision ?? "city") === option.id}>
+          <input
+            type="radio"
+            name="location-precision"
+            checked={(tracker.privacy.locationPrecision ?? "city") === option.id}
+            onchange={() => tracker.setLocationPrecision(option.id).catch(() => undefined)}
+          />
+          <strong>{option.label}</strong>
+          <small>{option.body}</small>
+        </label>
+      {/each}
+    </div>
+
     <h2>Upozornění v tomto prohlížeči</h2>
     {#if !alerts.supported}
       <p class="muted">Tento prohlížeč upozornění neumí.</p>
@@ -160,6 +213,8 @@
         />
       </label>
     {/if}
+
+    <AccountSecurity {client} {encryption} onDeleted={onAccountDeleted} />
   </div>
 
   <dialog bind:this={dialog}>
@@ -328,6 +383,43 @@
 
   .switch input:checked::after {
     transform: translateX(18px);
+  }
+
+  .choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+  }
+
+  .choice {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    cursor: pointer;
+  }
+
+  .choice.on {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  }
+
+  .choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .choice:has(input:focus-visible) {
+    outline: 2px solid var(--accent);
+  }
+
+  .choice small {
+    color: var(--ink-muted);
+    font-size: 0.8rem;
   }
 
   .muted,

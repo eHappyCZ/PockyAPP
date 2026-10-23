@@ -133,7 +133,7 @@ fun ToggleCard(title: String, body: String, checked: Boolean, onCheckedChange: (
                 checked = checked,
                 onCheckedChange = null,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = PockyColors.Ink,
+                    checkedThumbColor = PockyColors.OnBrand,
                     checkedTrackColor = PockyColors.Accent,
                     uncheckedThumbColor = PockyColors.InkMuted,
                     uncheckedTrackColor = PockyColors.Bg,
@@ -160,7 +160,7 @@ private fun SelectionMark(selected: Boolean) {
             ),
     ) {
         if (selected) {
-            Icon(PockyIcons.Check, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(16.dp))
+            Icon(PockyIcons.Check, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(16.dp))
         }
     }
 }

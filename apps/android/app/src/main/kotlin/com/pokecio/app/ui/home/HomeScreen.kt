@@ -134,7 +134,7 @@ private fun ComposeButton(onClick: () -> Unit, modifier: Modifier) {
         Icon(
             imageVector = PockyIcons.Compose,
             contentDescription = stringResource(R.string.rooms_new_chat),
-            tint = PockyColors.Ink,
+            tint = PockyColors.OnBrand,
             modifier = Modifier.size(24.dp),
         )
     }

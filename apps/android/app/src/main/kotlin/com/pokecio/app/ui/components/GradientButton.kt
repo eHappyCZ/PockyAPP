@@ -48,14 +48,14 @@ fun GradientButton(
             CircularProgressIndicator(
                 modifier = Modifier.size(22.dp),
                 strokeWidth = 2.dp,
-                color = PockyColors.Ink,
+                color = PockyColors.OnBrand,
             )
         } else {
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = PockyColors.Ink,
+                color = PockyColors.OnBrand,
             )
         }
     }

@@ -1,41 +1,59 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { PockyClient } from "../lib/core";
+  import { pickImage } from "../lib/media";
   import { errorText, shortName } from "../lib/text";
-  import type { EventEntry, Room, RoomInfo } from "../lib/types";
+  import type { EventEntry, Member, Person, Room, RoomInfo, TrustLevel } from "../lib/types";
+  import Album from "./Album.svelte";
   import Avatar from "./Avatar.svelte";
   import Icon from "./Icon.svelte";
   import MediaImage from "./MediaImage.svelte";
+  import PeoplePicker from "./PeoplePicker.svelte";
   import RoomHistory from "./RoomHistory.svelte";
 
   let {
     client,
     room,
+    rooms,
     images,
     onOpenImage,
     onLeft,
+    onVerify,
     onClose,
   }: {
     client: PockyClient;
     room: Room;
+    rooms: Room[];
     images: EventEntry[];
     onOpenImage: (itemKey: string) => void;
     onLeft: () => void;
+    onVerify: (userId: string) => void;
     onClose: () => void;
   } = $props();
+
+  let trust = $state<TrustLevel | null>(null);
+  let showAlbum = $state(false);
 
   let info = $state<RoomInfo | null>(null);
   let failed = $state(false);
   let busy = $state(false);
   let showHistory = $state(false);
   let error = $state("");
+  let editing = $state(false);
+  let draftName = $state("");
+  let draftTopic = $state("");
+  let invitees = $state<Person[]>([]);
+  let removing = $state<Member | null>(null);
   let confirm: HTMLDialogElement;
+  let inviteDialog: HTMLDialogElement;
+  let removeDialog: HTMLDialogElement;
 
   const members = $derived(
     [...(info?.members ?? [])].sort((a, b) => rank(a.role) - rank(b.role) || Number(a.invited) - Number(b.invited)),
   );
   const joined = $derived(members.filter((member) => !member.invited).length);
   const photos = $derived(images.slice(-9).reverse());
+  const canEdit = $derived(!room.isDirect && !!info && (info.canEditName || info.canEditTopic || info.canEditAvatar));
 
   function rank(role: string): number {
     return role === "admin" ? 0 : role === "moderator" ? 1 : 2;
@@ -47,11 +65,24 @@
     return `${count} členů`;
   }
 
-  onMount(() => {
-    client
+  function load() {
+    return client
       .roomInfo(room.id)
-      .then((value: RoomInfo) => (info = value))
+      .then((value: RoomInfo) => {
+        info = value;
+        failed = false;
+      })
       .catch(() => (failed = true));
+  }
+
+  onMount(() => {
+    load();
+    if (room.isDirect && room.isEncrypted && room.directUserId) {
+      client
+        .userTrust(room.directUserId)
+        .then((value) => (trust = value as TrustLevel))
+        .catch(() => undefined);
+    }
   });
 
   async function act(action: () => Promise<void>) {
@@ -64,6 +95,64 @@
     } finally {
       busy = false;
     }
+  }
+
+  function startEditing() {
+    draftName = info?.name ?? room.name;
+    draftTopic = info?.topic ?? "";
+    editing = true;
+  }
+
+  function saveEdits(event: SubmitEvent) {
+    event.preventDefault();
+    if (!info) return;
+    const current = info;
+    act(async () => {
+      if (current.canEditName && draftName.trim() !== current.name) {
+        await client.setRoomName(room.id, draftName);
+      }
+      if (current.canEditTopic && draftTopic.trim() !== (current.topic ?? "")) {
+        await client.setRoomTopic(room.id, draftTopic);
+      }
+      editing = false;
+      await load();
+    });
+  }
+
+  async function changePhoto() {
+    const bytes = await pickImage();
+    if (bytes) act(() => client.setRoomAvatar(room.id, bytes));
+  }
+
+  function openInvite() {
+    invitees = [];
+    error = "";
+    inviteDialog.showModal();
+  }
+
+  function invite() {
+    const ids = invitees.map((person) => person.userId);
+    if (ids.length === 0) return;
+    act(async () => {
+      await client.invitePeople(room.id, ids);
+      inviteDialog.close();
+      await load();
+    });
+  }
+
+  function askRemove(member: Member) {
+    removing = member;
+    removeDialog.showModal();
+  }
+
+  function remove() {
+    const member = removing;
+    removeDialog.close();
+    if (!member) return;
+    act(async () => {
+      await client.removeMember(room.id, member.userId);
+      await load();
+    });
   }
 
   function leave() {
@@ -84,10 +173,50 @@
   <div class="body">
     <div class="who">
       <Avatar id={room.id} name={room.name} url={room.avatarUrl} size={84} square={!room.isDirect} />
-      <h2>{room.name}</h2>
-      {#if info?.isDirect && info.directUserId}<span class="muted">{info.directUserId}</span>{/if}
-      {#if info?.topic}<p class="topic">{info.topic}</p>{/if}
-      {#if room.isEncrypted}<span class="lock"><Icon name="lock" size={13} />Šifrováno</span>{/if}
+      {#if editing && info}
+        <form class="edit" onsubmit={saveEdits}>
+          {#if info.canEditAvatar}
+            <button type="button" class="link" onclick={changePhoto} disabled={busy}>
+              <Icon name="camera" size={16} />Změnit fotku skupiny
+            </button>
+          {/if}
+          {#if info.canEditName}
+            <label>
+              <span>Název</span>
+              <input bind:value={draftName} maxlength="64" disabled={busy} />
+            </label>
+          {/if}
+          {#if info.canEditTopic}
+            <label>
+              <span>Popis</span>
+              <textarea bind:value={draftTopic} maxlength="500" rows="3" placeholder="O čem skupina je" disabled={busy}></textarea>
+            </label>
+          {/if}
+          <div class="buttons">
+            <button type="button" onclick={() => (editing = false)} disabled={busy}>Zrušit</button>
+            <button type="submit" class="primary" disabled={busy || (info.canEditName && !draftName.trim())}>Uložit</button>
+          </div>
+        </form>
+      {:else}
+        <h2>{room.name}</h2>
+        {#if info?.isDirect && info.directUserId}<span class="muted">{info.directUserId}</span>{/if}
+        {#if info?.topic}<p class="topic">{info.topic}</p>{/if}
+        {#if room.isEncrypted}<span class="lock"><Icon name="lock" size={13} />Šifrováno</span>{/if}
+        {#if trust === "verified"}
+          <span class="trust ok"><Icon name="shield-check" size={15} />Ověřený kontakt</span>
+        {:else if trust === "unverified" || trust === "verificationBroken"}
+          <span class="trust" class:broken={trust === "verificationBroken"}>
+            <Icon name="shield-alert" size={15} />{trust === "verificationBroken" ? "Ověření už neplatí" : "Neověřený kontakt"}
+          </span>
+          {#if room.directUserId}
+            {@const userId = room.directUserId}
+            <button class="link" onclick={() => onVerify(userId)}><Icon name="fingerprint" size={16} />Ověřit pomocí emoji</button>
+          {/if}
+        {/if}
+        {#if canEdit}
+          <button class="link" onclick={startEditing}><Icon name="edit" size={16} />Upravit skupinu</button>
+        {/if}
+      {/if}
     </div>
 
     <div class="actions">
@@ -96,6 +225,9 @@
       </button>
       <button onclick={() => act(() => client.setMuted(room.id, !room.isMuted))} disabled={busy}>
         <Icon name={room.isMuted ? "bell" : "bell-off"} size={18} />{room.isMuted ? "Zrušit ztlumení" : "Ztlumit"}
+      </button>
+      <button onclick={() => (showAlbum = true)}>
+        <Icon name="images" size={18} />Album fotek a souborů
       </button>
       <button onclick={() => (showHistory = !showHistory)} aria-expanded={showHistory}>
         <Icon name="timeline" size={18} />Historie změn
@@ -125,6 +257,9 @@
       {#if failed}
         <p class="muted">Informace o chatu se nepodařilo načíst.</p>
       {/if}
+      {#if info?.canInvite}
+        <button class="invite" onclick={openInvite} disabled={busy}><Icon name="user-plus" size={18} />Pozvat lidi</button>
+      {/if}
       <ul>
         {#each members as member (member.userId)}
           <li>
@@ -135,6 +270,11 @@
                 {member.invited ? "Pozvánka čeká na přijetí" : member.role === "admin" ? "Správce" : member.role === "moderator" ? "Moderátor" : member.userId}
               </small>
             </span>
+            {#if member.canRemove}
+              <button class="icon remove" onclick={() => askRemove(member)} disabled={busy} title="Odebrat ze skupiny">
+                <Icon name="close" size={18} />
+              </button>
+            {/if}
           </li>
         {/each}
       </ul>
@@ -155,6 +295,31 @@
     <div class="buttons">
       <button onclick={() => confirm.close()}>Zrušit</button>
       <button class="danger" onclick={leave}>Opustit</button>
+    </div>
+  </dialog>
+
+  {#if showAlbum}
+    <Album {client} {room} {rooms} onClose={() => (showAlbum = false)} />
+  {/if}
+
+  <dialog bind:this={inviteDialog} class="invite-dialog">
+    <h2>Pozvat do „{room.name}“</h2>
+    <PeoplePicker {client} bind:selected={invitees} exclude={members.map((member) => member.userId)} />
+    {#if error}<p class="error" role="alert">{error}</p>{/if}
+    <div class="buttons">
+      <button onclick={() => inviteDialog.close()}>Zrušit</button>
+      <button class="primary" onclick={invite} disabled={busy || invitees.length === 0}>
+        {invitees.length > 1 ? `Pozvat ${invitees.length} lidi` : "Pozvat"}
+      </button>
+    </div>
+  </dialog>
+
+  <dialog bind:this={removeDialog}>
+    <h2>Odebrat {removing?.name ?? shortName(removing?.userId ?? "")}?</h2>
+    <p>Přestane dostávat zprávy z této skupiny. Vrátit se může jen s novou pozvánkou.</p>
+    <div class="buttons">
+      <button onclick={() => removeDialog.close()}>Zrušit</button>
+      <button class="danger" onclick={remove}>Odebrat</button>
     </div>
   </dialog>
 </aside>
@@ -227,6 +392,23 @@
     color: var(--success);
     border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
     font-size: 0.78rem;
+  }
+
+  .trust {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    font-size: 0.82rem;
+    color: var(--gold);
+  }
+
+  .trust.ok {
+    color: var(--success);
+  }
+
+  .trust.broken {
+    color: #f87171;
   }
 
   .actions {
@@ -353,6 +535,107 @@
     border-color: transparent;
     background: #dc2626;
     color: #fff;
+  }
+
+  .buttons .primary {
+    border-color: transparent;
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: none;
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+
+  .edit {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .edit label {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+  }
+
+  .edit input,
+  .edit textarea {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    resize: vertical;
+  }
+
+  .edit input:focus,
+  .edit textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .edit .buttons {
+    width: 100%;
+  }
+
+  .invite {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px dashed var(--line);
+    background: none;
+    font-weight: 600;
+    color: var(--accent-soft);
+  }
+
+  .remove {
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    color: var(--ink-muted);
+  }
+
+  .invite-dialog {
+    width: min(460px, calc(100vw - 32px));
+    max-height: min(640px, calc(100vh - 48px));
+  }
+
+  .invite-dialog[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .invite-dialog :global(.search),
+  .invite-dialog :global(.chips) {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .invite-dialog .buttons {
+    margin-top: 12px;
   }
 
   button:disabled {

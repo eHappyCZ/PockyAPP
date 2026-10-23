@@ -10,12 +10,15 @@ mod error;
 mod live_location;
 mod location;
 mod media;
+mod moderation;
 mod people;
 mod picture;
+mod pins;
 mod preferences;
 mod presence;
 mod profile;
 mod push;
+mod retention;
 mod room_info;
 mod rooms;
 mod session;
@@ -34,7 +37,7 @@ pub use app_lock::{
 };
 pub use auth::{
     avatar_url, current_session, delete_account, display_name, login, logout, restore_client,
-    restore_session, watch_session, SessionEvent,
+    register, restore_session, watch_session, SessionEvent,
 };
 pub use changelog::{changelog, Release};
 #[cfg(not(target_family = "wasm"))]
@@ -60,6 +63,9 @@ pub use matrix_sdk::Client;
 pub use matrix_sdk_ui::sync_service::SyncService;
 pub use matrix_sdk_ui::timeline::Timeline;
 pub use media::load_media;
+pub use moderation::{block_user, blocked_users, report_message, unblock_user};
+pub use pins::{can_pin_messages, pin_message, pinned_messages, unpin_message, PinnedMessage};
+pub use retention::{can_set_message_lifetime, message_lifetime, set_message_lifetime};
 pub use people::{
     accept_invite, create_group, decline_invite, invite_info, open_direct_chat, search_people,
     InviteInfo, Person,

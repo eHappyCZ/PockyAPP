@@ -5,6 +5,7 @@
   import Logo from "../components/Logo.svelte";
   import LogoutDialog from "../components/LogoutDialog.svelte";
   import NewChatDialog from "../components/NewChatDialog.svelte";
+  import ProfileDialog from "../components/ProfileDialog.svelte";
   import Recovery from "../components/Recovery.svelte";
   import StatusDialog from "../components/StatusDialog.svelte";
   import StatusStrip from "../components/StatusStrip.svelte";
@@ -14,7 +15,7 @@
   import MapScreen from "./MapScreen.svelte";
   import { mapsEnabled } from "../lib/config";
   import RoomView from "./Room.svelte";
-  import { signOut } from "../lib/account";
+  import { forget, signOut } from "../lib/account";
   import type { PockyClient, Verification } from "../lib/core";
   import { Alerts } from "../lib/alerts.svelte";
   import { PresenceTracker, typingText } from "../lib/presence.svelte";
@@ -24,6 +25,8 @@
   let { client, onSignedOut }: { client: PockyClient; onSignedOut: () => void } = $props();
 
   let name = $state("");
+  let avatarUrl = $state<string | undefined>();
+  let editingProfile = $state(false);
   let rooms = $state<Room[] | null>(null);
   let status = $state<SyncStatus>("idle");
   let leaving = $state(false);
@@ -133,6 +136,7 @@
     const userId = client.userId() ?? "";
     name = userId.split(":")[0].replace(/^@/, "");
     client.displayName().then((value) => (name = value)).catch(() => undefined);
+    client.avatarUrl().then((value) => (avatarUrl = value)).catch(() => undefined);
 
     client.watchSyncStatus((value: SyncStatus) => (status = value)).catch(() => undefined);
     client.watchRooms((value: Room[]) => (rooms = value)).catch(() => undefined);
@@ -145,6 +149,12 @@
       tracker.stop();
     };
   });
+
+  async function accountDeleted() {
+    leaving = true;
+    await forget().catch(() => undefined);
+    onSignedOut();
+  }
 
   async function leave() {
     confirmingLogout = false;
@@ -168,6 +178,9 @@
         </p>
       </div>
       <div class="tools">
+        <button class="me" onclick={() => (editingProfile = true)} title="Můj profil">
+          <Avatar id={client.userId() ?? ""} {name} url={avatarUrl} size={40} />
+        </button>
         {#if mapsEnabled}
           <a class="tool" href="#/map" title="Mapa"><Icon name="map" /></a>
         {/if}
@@ -253,14 +266,14 @@
   {#if showMap && mapsEnabled}
     <MapScreen {client} onBack={close} onOpenRoom={openRoom} />
   {:else if showDevices}
-    <Devices {client} {tracker} {alerts} onBack={close} />
+    <Devices {client} {tracker} {alerts} {encryption} onBack={close} onAccountDeleted={accountDeleted} />
   {:else if selected?.isInvite}
     {#key selected.id}
       <InviteView {client} room={selected} onBack={close} />
     {/key}
   {:else if selected}
     {#key selected.id}
-      <RoomView {client} {tracker} room={selected} onBack={close} />
+      <RoomView {client} {tracker} room={selected} rooms={rooms ?? []} onBack={close} onVerification={(value) => (verification = value)} />
     {/key}
   {:else}
     <section class="empty">
@@ -278,6 +291,19 @@
 
 {#if creating}
   <NewChatDialog {client} rooms={rooms ?? []} onOpen={openRoom} onClose={() => (creating = false)} />
+{/if}
+
+{#if editingProfile}
+  <ProfileDialog
+    {client}
+    {name}
+    {avatarUrl}
+    onChange={(value, url) => {
+      name = value;
+      avatarUrl = url;
+    }}
+    onClose={() => (editingProfile = false)}
+  />
 {/if}
 
 {#if editingStatus}
@@ -342,6 +368,13 @@
     border: 1px solid var(--line);
     background: none;
     color: var(--ink-muted);
+  }
+
+  .me {
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
   }
 
   .find {

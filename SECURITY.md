@@ -18,7 +18,8 @@ sharing details publicly.
 
 - the Rust core (`core/`), including encryption, key backup and verification,
 - the Android app (`apps/android/`),
-- the update mechanism (manifest, SHA-256 and signature checks).
+- the update mechanism (manifest, SHA-256 of the download and the check that the APK is signed
+  with the same certificate as the installed app; the manifest itself is not signed).
 
 The Matrix homeserver software (Synapse) and matrix-rust-sdk have their own security processes;
 issues in them are best reported upstream.

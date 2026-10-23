@@ -13,6 +13,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import com.pokecio.app.preferences.AppLanguage
 
 @Composable
 fun typingText(typists: List<Typist>, isDirect: Boolean): String {
@@ -69,6 +70,6 @@ fun formatTimestamp(timestampMs: Long): String {
     }
 }
 
-val AppLocale: Locale = Locale.forLanguageTag("cs-CZ")
+val AppLocale: Locale get() = AppLanguage.locale
 
 val TimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm", AppLocale)

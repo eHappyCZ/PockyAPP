@@ -59,7 +59,7 @@ fun UpdateDialog(update: AppUpdate, phase: UpdatePhase, onUpdate: () -> Unit, on
                     .size(64.dp)
                     .background(PockyGradient, CircleShape),
             ) {
-                Icon(PockyIcons.Download, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(30.dp))
+                Icon(PockyIcons.Download, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(30.dp))
             }
             Spacer(Modifier.height(16.dp))
             Text(

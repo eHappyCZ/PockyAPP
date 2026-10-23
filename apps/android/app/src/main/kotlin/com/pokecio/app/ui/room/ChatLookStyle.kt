@@ -38,6 +38,7 @@ import kotlin.math.sin
 val LocalChatLook = staticCompositionLocalOf { ChatLook.CLASSIC }
 
 fun Modifier.bubbleSurface(own: Boolean, shape: Shape, look: ChatLook): Modifier = when {
+    look == ChatLook.AURA && own && PockyColors.IsLight -> background(PockyColors.BubbleOut, shape)
     look == ChatLook.AURA && own -> this
         .shadow(8.dp, shape, ambientColor = PockyColors.Accent, spotColor = PockyColors.Accent)
         .background(PockyGradient, shape)
@@ -101,11 +102,12 @@ fun AuraBackground(modifier: Modifier = Modifier) {
         label = "phase",
     )
 
+    val strength = if (PockyColors.IsLight) 0.4f else 1f
     Canvas(modifier.background(PockyColors.Bg)) {
         val angle = phase * 2 * PI.toFloat()
-        glow(PockyColors.GradientStart, 0.30f + 0.12f * cos(angle), 0.25f + 0.08f * sin(angle), 0.75f, 0.45f)
-        glow(PockyColors.GradientEnd, 0.75f + 0.10f * sin(angle * 2), 0.55f + 0.10f * cos(angle), 0.7f, 0.35f)
-        glow(PockyColors.Accent, 0.40f + 0.15f * sin(angle + 1f), 0.85f + 0.05f * cos(angle * 2), 0.6f, 0.25f)
+        glow(PockyColors.GradientStart, 0.30f + 0.12f * cos(angle), 0.25f + 0.08f * sin(angle), 0.75f, 0.45f * strength)
+        glow(PockyColors.GradientEnd, 0.75f + 0.10f * sin(angle * 2), 0.55f + 0.10f * cos(angle), 0.7f, 0.35f * strength)
+        glow(PockyColors.Accent, 0.40f + 0.15f * sin(angle + 1f), 0.85f + 0.05f * cos(angle * 2), 0.6f, 0.25f * strength)
     }
 }
 

@@ -5,8 +5,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Configuration
 import androidx.core.content.ContextCompat
 import com.pokecio.app.data.ClientHolder
+import com.pokecio.app.media.FileOpener
+import com.pokecio.app.preferences.AppLanguage
 import com.pokecio.app.push.Notifier
 import com.pokecio.app.tls.TlsVerifier
 import com.pokecio.app.update.UpdateCheckWorker
@@ -23,9 +26,16 @@ class PockyApp : Application() {
     @Volatile
     var inForeground = false
 
+    override fun attachBaseContext(base: Context) {
+        AppLanguage.load(base)
+        val config = Configuration(base.resources.configuration).apply { setLocale(AppLanguage.locale) }
+        super.attachBaseContext(base.createConfigurationContext(config))
+    }
+
     override fun onCreate() {
         super.onCreate()
         TlsVerifier.init(this)
+        FileOpener.clear(this)
         notifier.createChannels()
         if (UpdateController.isAutomatic(UpdateController.prefs(this))) UpdateCheckWorker.schedule(this)
         ContextCompat.registerReceiver(

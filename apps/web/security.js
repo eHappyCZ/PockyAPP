@@ -26,6 +26,6 @@ export const securityHeaders = {
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "no-referrer",
-  "Permissions-Policy": "geolocation=(self), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()",
+  "Permissions-Policy": "geolocation=(self), camera=(), microphone=(self), payment=(), usb=(), interest-cohort=()",
   "Cross-Origin-Opener-Policy": "same-origin",
 };

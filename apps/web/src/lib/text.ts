@@ -1,4 +1,4 @@
-import type { EventContent, LastMessage, PreviewContent, StateChange } from "./types";
+import type { EventContent, LastMessage, PreviewContent, Shield, StateChange } from "./types";
 
 const errors: Record<string, string> = {
   invalid_credentials: "Nesprávné jméno nebo heslo.",
@@ -10,6 +10,9 @@ const errors: Record<string, string> = {
   session_expired: "Přihlášení vypršelo. Přihlas se znovu.",
   invalid_recovery_key: "Klíč nebo fráze nesedí. Zkontroluj ho a zkus to znovu.",
   file_too_large: "Soubor je na server moc velký.",
+  invalid_name: "Název je prázdný nebo moc dlouhý.",
+  weak_passphrase: "Fráze je moc slabá. Přidej slova nebo znaky.",
+  weak_password: "Nové heslo musí mít aspoň 8 znaků a lišit se od starého.",
 };
 
 export function errorText(err: unknown): string {
@@ -80,6 +83,24 @@ export function shortName(userId: string): string {
 export function timeOfDay(timestampMs: number): string {
   const time = new Date(timestampMs);
   return `${time.getHours()}:${String(time.getMinutes()).padStart(2, "0")}`;
+}
+
+export function fullTime(timestampMs: number): string {
+  return `${dayLabel(timestampMs)}, ${timeOfDay(timestampMs)}`;
+}
+
+const shields: Record<Shield["reason"], string> = {
+  authenticityNotGuaranteed: "Pravost zprávy nejde na tomto zařízení zaručit.",
+  unknownDevice: "Odesláno z neznámého zařízení.",
+  unverifiedDevice: "Odesláno ze zařízení, které odesílatel neověřil.",
+  unverifiedSender: "Odesílatel není ověřený.",
+  identityChanged: "Odesílateli se změnila šifrovací identita.",
+  mismatchedSender: "Odesílatel nesedí se zařízením, ze kterého zpráva přišla.",
+  sentInClear: "Zpráva nebyla šifrovaná.",
+};
+
+export function shieldText(shield: Shield): string {
+  return shields[shield.reason];
 }
 
 export function dayLabel(timestampMs: number): string {

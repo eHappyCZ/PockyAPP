@@ -31,6 +31,12 @@ pub enum CoreError {
     InvalidRecoveryKey,
     #[error("recovery passphrase is too weak")]
     WeakPassphrase,
+    #[error("that username is already taken")]
+    UsernameTaken,
+    #[error("invalid invitation code")]
+    InvalidInviteCode,
+    #[error("registration is not available on this server")]
+    RegistrationUnavailable,
     #[error("new password is too weak")]
     WeakPassword,
     #[error("PIN must have six digits")]

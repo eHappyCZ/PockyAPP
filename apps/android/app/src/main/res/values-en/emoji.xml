@@ -1,0 +1,68 @@
+<resources>
+    <string-array name="sas_emoji_names">
+        <item>Dog</item>
+        <item>Cat</item>
+        <item>Lion</item>
+        <item>Horse</item>
+        <item>Unicorn</item>
+        <item>Pig</item>
+        <item>Elephant</item>
+        <item>Rabbit</item>
+        <item>Panda</item>
+        <item>Rooster</item>
+        <item>Penguin</item>
+        <item>Turtle</item>
+        <item>Fish</item>
+        <item>Octopus</item>
+        <item>Butterfly</item>
+        <item>Flower</item>
+        <item>Tree</item>
+        <item>Cactus</item>
+        <item>Mushroom</item>
+        <item>Globe</item>
+        <item>Moon</item>
+        <item>Cloud</item>
+        <item>Fire</item>
+        <item>Banana</item>
+        <item>Apple</item>
+        <item>Strawberry</item>
+        <item>Corn</item>
+        <item>Pizza</item>
+        <item>Cake</item>
+        <item>Heart</item>
+        <item>Smiley</item>
+        <item>Robot</item>
+        <item>Hat</item>
+        <item>Glasses</item>
+        <item>Spanner</item>
+        <item>Santa Claus</item>
+        <item>Thumbs up</item>
+        <item>Umbrella</item>
+        <item>Hourglass</item>
+        <item>Alarm clock</item>
+        <item>Gift</item>
+        <item>Light bulb</item>
+        <item>Book</item>
+        <item>Pencil</item>
+        <item>Paperclip</item>
+        <item>Scissors</item>
+        <item>Lock</item>
+        <item>Key</item>
+        <item>Hammer</item>
+        <item>Telephone</item>
+        <item>Flag</item>
+        <item>Train</item>
+        <item>Bicycle</item>
+        <item>Aeroplane</item>
+        <item>Rocket</item>
+        <item>Trophy</item>
+        <item>Ball</item>
+        <item>Guitar</item>
+        <item>Trumpet</item>
+        <item>Bell</item>
+        <item>Anchor</item>
+        <item>Headphones</item>
+        <item>Folder</item>
+        <item>Pin</item>
+    </string-array>
+</resources>

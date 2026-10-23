@@ -163,7 +163,7 @@ private fun StatusItem(
                         .padding(2.dp)
                         .background(PockyGradient, CircleShape),
                 ) {
-                    Text("+", color = PockyColors.Ink, fontWeight = FontWeight.Bold, fontSize = 13.sp, lineHeight = 13.sp)
+                    Text("+", color = PockyColors.OnBrand, fontWeight = FontWeight.Bold, fontSize = 13.sp, lineHeight = 13.sp)
                 }
             }
         }
@@ -446,10 +446,10 @@ private fun Chip(text: String, selected: Boolean, onClick: () -> Unit) {
             .padding(horizontal = 12.dp, vertical = 7.dp),
     ) {
         if (selected) {
-            Icon(PockyIcons.Check, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(14.dp))
+            Icon(PockyIcons.Check, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(4.dp))
         }
-        Text(text, style = MaterialTheme.typography.labelLarge, color = PockyColors.Ink)
+        Text(text, style = MaterialTheme.typography.labelLarge, color = PockyColors.OnBrand)
     }
 }
 

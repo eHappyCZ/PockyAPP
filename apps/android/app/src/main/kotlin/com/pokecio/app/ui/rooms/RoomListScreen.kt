@@ -399,7 +399,7 @@ private fun InviteCard(room: Room, handlers: InviteHandlers, modifier: Modifier 
                     .background(PockyGradient)
                     .clickable(enabled = !handlers.busy, role = Role.Button) { handlers.onAccept(room.id) },
             ) {
-                Text(stringResource(R.string.invite_accept), fontWeight = FontWeight.Bold, color = PockyColors.Ink)
+                Text(stringResource(R.string.invite_accept), fontWeight = FontWeight.Bold, color = PockyColors.OnBrand)
             }
         }
     }
@@ -620,7 +620,7 @@ private fun FilterTabs(selected: RoomFilter, unreadCount: Int, onSelect: (RoomFi
             filters.forEach { filter ->
                 val active = filter == selected
                 val color by animateColorAsState(
-                    if (active) PockyColors.Ink else PockyColors.InkMuted,
+                    if (active) PockyColors.OnBrand else PockyColors.InkMuted,
                     label = "filter-text",
                 )
                 Row(
@@ -652,7 +652,7 @@ private fun FilterTabs(selected: RoomFilter, unreadCount: Int, onSelect: (RoomFi
                             modifier = Modifier
                                 .heightIn(min = 16.dp)
                                 .widthIn(min = 16.dp)
-                                .background(if (active) PockyColors.Ink else PockyColors.Accent, CircleShape)
+                                .background(if (active) PockyColors.OnBrand else PockyColors.Accent, CircleShape)
                                 .padding(horizontal = 4.dp, vertical = 1.dp),
                         ) {
                             Text(
@@ -660,7 +660,7 @@ private fun FilterTabs(selected: RoomFilter, unreadCount: Int, onSelect: (RoomFi
                                 fontSize = 10.sp,
                                 lineHeight = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (active) PockyColors.Accent else PockyColors.Ink,
+                                color = if (active) PockyColors.Accent else PockyColors.OnBrand,
                             )
                         }
                     }

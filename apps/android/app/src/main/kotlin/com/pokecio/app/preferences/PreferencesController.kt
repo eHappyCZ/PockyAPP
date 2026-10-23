@@ -40,6 +40,9 @@ class PreferencesController(
     private val _problems = MutableSharedFlow<Int>(extraBufferCapacity = 4)
     val problems: SharedFlow<Int> = _problems.asSharedFlow()
 
+    private val _blocked = MutableStateFlow<List<String>>(emptyList())
+    val blocked: StateFlow<List<String>> = _blocked.asStateFlow()
+
     private val saving = Mutex()
 
     init {
@@ -125,6 +128,27 @@ class PreferencesController(
     fun setSendReadReceipts(send: Boolean) = update { it.copy(sendReadReceipts = send) }
 
     fun setBlockScreenshots(block: Boolean) = update { it.copy(blockScreenshots = block) }
+
+    fun loadBlocked() {
+        scope.launch {
+            try {
+                _blocked.value = client.blockedUsers()
+            } catch (_: PockyException) {
+            }
+        }
+    }
+
+    fun unblock(userId: String) {
+        scope.launch {
+            try {
+                client.unblockUser(userId)
+                _blocked.value = client.blockedUsers()
+                _problems.tryEmit(R.string.blocked_unblocked)
+            } catch (_: PockyException) {
+                _problems.tryEmit(R.string.room_action_failed)
+            }
+        }
+    }
 
     fun finishOnboarding() = update { it.copy(onboardingDone = true) }
 

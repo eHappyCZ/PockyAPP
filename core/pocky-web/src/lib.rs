@@ -8,6 +8,7 @@ mod people;
 mod presence;
 mod rooms;
 mod timeline;
+mod trust;
 mod verification;
 
 use std::{cell::RefCell, rc::Rc};
@@ -23,6 +24,7 @@ pub use people::{Invite, Member, PersonInfo, RoomInfo};
 pub use presence::{PresenceInfo, Privacy, Status, Typist};
 pub use rooms::{LastMessage, MessageContent, Room, SyncStatus};
 pub use timeline::RoomTimeline;
+pub use trust::{IdentityWatch, Warning};
 pub use verification::{Emoji, Step, Verification};
 
 #[wasm_bindgen(start)]
@@ -55,6 +57,16 @@ pub async fn create_client(
         .map_err(error)?;
 
     Ok(PockyClient::new(client))
+}
+
+#[wasm_bindgen(js_name = passphraseStrength)]
+pub fn passphrase_strength(passphrase: String) -> String {
+    encryption::strength_name(pocky_core::passphrase_strength(&passphrase)).to_owned()
+}
+
+#[wasm_bindgen(js_name = minPassphraseChars)]
+pub fn min_passphrase_chars() -> u32 {
+    pocky_core::MIN_PASSPHRASE_CHARS as u32
 }
 
 #[derive(serde::Serialize)]
@@ -146,6 +158,20 @@ impl PockyClient {
         Ok(session.to_json())
     }
 
+    pub async fn register(
+        &self,
+        username: String,
+        password: String,
+        invite_code: String,
+        device_name: String,
+    ) -> Result<String, JsValue> {
+        let session =
+            pocky_core::register(&self.client, &username, &password, &invite_code, &device_name)
+                .await
+                .map_err(error)?;
+        Ok(session.to_json())
+    }
+
     pub async fn logout(&self) -> Result<(), JsValue> {
         self.stop_sync().await;
         pocky_core::logout(&self.client).await.map_err(error)
@@ -154,6 +180,30 @@ impl PockyClient {
     #[wasm_bindgen(js_name = displayName)]
     pub async fn display_name(&self) -> Result<String, JsValue> {
         pocky_core::display_name(&self.client).await.map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = avatarUrl)]
+    pub async fn avatar_url(&self) -> Result<Option<String>, JsValue> {
+        pocky_core::avatar_url(&self.client).await.map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = setDisplayName)]
+    pub async fn set_display_name(&self, name: String) -> Result<String, JsValue> {
+        pocky_core::set_display_name(&self.client, &name)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = setAvatar)]
+    pub async fn set_avatar(&self, bytes: Vec<u8>) -> Result<String, JsValue> {
+        pocky_core::set_avatar(&self.client, &bytes)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = removeAvatar)]
+    pub async fn remove_avatar(&self) -> Result<(), JsValue> {
+        pocky_core::remove_avatar(&self.client).await.map_err(error)
     }
 
     #[wasm_bindgen(js_name = startSync)]
@@ -177,12 +227,84 @@ impl PockyClient {
         serde_wasm_bindgen::to_value(&Encryption::from(status)).map_err(Into::into)
     }
 
+    #[wasm_bindgen(js_name = enableRecovery)]
+    pub async fn enable_recovery(&self, password: String, passphrase: String) -> Result<String, JsValue> {
+        pocky_core::enable_recovery(&self.client, &password, &passphrase)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = resetIdentity)]
+    pub async fn reset_identity(&self, password: String, passphrase: String) -> Result<String, JsValue> {
+        pocky_core::reset_identity(&self.client, &password, &passphrase)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = changeRecoveryPassphrase)]
+    pub async fn change_recovery_passphrase(&self, passphrase: String) -> Result<String, JsValue> {
+        pocky_core::change_recovery_passphrase(&self.client, &passphrase)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = changePassword)]
+    pub async fn change_password(
+        &self,
+        current: String,
+        new_password: String,
+        sign_out_others: bool,
+    ) -> Result<(), JsValue> {
+        pocky_core::change_password(&self.client, &current, &new_password, sign_out_others)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = deleteAccount)]
+    pub async fn delete_account(&self, password: String) -> Result<(), JsValue> {
+        pocky_core::delete_account(&self.client, &password)
+            .await
+            .map_err(error)?;
+        self.stop_sync().await;
+        Ok(())
+    }
+
     #[wasm_bindgen(js_name = requestVerification)]
     pub async fn request_verification(&self) -> Result<Verification, JsValue> {
         let flow = pocky_core::VerificationFlow::request_self(&self.client)
             .await
             .map_err(error)?;
         Ok(Verification::new(flow))
+    }
+
+    #[wasm_bindgen(js_name = requestUserVerification)]
+    pub async fn request_user_verification(&self, user_id: String) -> Result<Verification, JsValue> {
+        let service = self.sync_service().await?;
+        let flow = pocky_core::VerificationFlow::request_user(&self.client, &user_id)
+            .await
+            .map_err(error)?;
+        flow.follow_room(&service, None).await;
+        Ok(Verification::new(flow))
+    }
+
+    #[wasm_bindgen(js_name = userTrust)]
+    pub async fn user_trust(&self, user_id: String) -> Result<String, JsValue> {
+        let level = pocky_core::user_trust(&self.client, &user_id)
+            .await
+            .map_err(error)?;
+        Ok(trust::trust_name(level).to_owned())
+    }
+
+    #[wasm_bindgen(js_name = acknowledgeIdentity)]
+    pub async fn acknowledge_identity(&self, user_id: String) -> Result<(), JsValue> {
+        pocky_core::acknowledge_identity(&self.client, &user_id)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = watchIdentityWarnings)]
+    pub fn watch_identity_warnings(&self, room_id: String, on_update: Function) -> IdentityWatch {
+        IdentityWatch::start(self.client.clone(), room_id, on_update)
     }
 
     #[wasm_bindgen(js_name = watchVerificationRequests)]
@@ -279,7 +401,37 @@ impl PockyClient {
             share_presence: preferences.share_presence,
             share_typing: preferences.share_typing,
             location_precision: location::precision_name(preferences.location_precision),
+            chat_style: match preferences.chat_style {
+                pocky_core::ChatStyle::Classic => "classic",
+                pocky_core::ChatStyle::Aura => "aura",
+            },
         })
+    }
+
+    #[wasm_bindgen(js_name = setLocationPrecision)]
+    pub async fn set_location_precision(&self, precision: String) -> Result<(), JsValue> {
+        let mut preferences = pocky_core::load_preferences(&self.client)
+            .await
+            .map_err(error)?;
+        preferences.location_precision = location::precision(&precision);
+        pocky_core::save_preferences(&self.client, &preferences)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = setChatStyle)]
+    pub async fn set_chat_style(&self, style: String) -> Result<(), JsValue> {
+        let mut preferences = pocky_core::load_preferences(&self.client)
+            .await
+            .map_err(error)?;
+        preferences.chat_style = if style == "aura" {
+            pocky_core::ChatStyle::Aura
+        } else {
+            pocky_core::ChatStyle::Classic
+        };
+        pocky_core::save_preferences(&self.client, &preferences)
+            .await
+            .map_err(error)
     }
 
     #[wasm_bindgen(js_name = setPrivacy)]
@@ -366,12 +518,141 @@ impl PockyClient {
             .map_err(error)
     }
 
+    #[wasm_bindgen(js_name = blockUser)]
+    pub async fn block_user(&self, user_id: String) -> Result<(), JsValue> {
+        pocky_core::block_user(&self.client, &user_id)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = unblockUser)]
+    pub async fn unblock_user(&self, user_id: String) -> Result<(), JsValue> {
+        pocky_core::unblock_user(&self.client, &user_id)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = blockedUsers)]
+    pub async fn blocked_users(&self) -> Result<Vec<String>, JsValue> {
+        pocky_core::blocked_users(&self.client).await.map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = reportMessage)]
+    pub async fn report_message(
+        &self,
+        room_id: String,
+        event_id: String,
+        reason: Option<String>,
+    ) -> Result<(), JsValue> {
+        pocky_core::report_message(&self.client, &room_id, &event_id, reason.as_deref())
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = pinnedMessages)]
+    pub async fn pinned_messages(&self, room_id: String) -> Result<JsValue, JsValue> {
+        let messages = pocky_core::pinned_messages(&self.client, &room_id)
+            .await
+            .map_err(error)?;
+        to_js(&messages)
+    }
+
+    #[wasm_bindgen(js_name = canPinMessages)]
+    pub async fn can_pin_messages(&self, room_id: String) -> Result<bool, JsValue> {
+        pocky_core::can_pin_messages(&self.client, &room_id)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = pinMessage)]
+    pub async fn pin_message(&self, room_id: String, event_id: String) -> Result<(), JsValue> {
+        pocky_core::pin_message(&self.client, &room_id, &event_id)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = unpinMessage)]
+    pub async fn unpin_message(&self, room_id: String, event_id: String) -> Result<(), JsValue> {
+        pocky_core::unpin_message(&self.client, &room_id, &event_id)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = messageLifetime)]
+    pub async fn message_lifetime(&self, room_id: String) -> Result<Option<f64>, JsValue> {
+        let seconds = pocky_core::message_lifetime(&self.client, &room_id)
+            .await
+            .map_err(error)?;
+        Ok(seconds.map(|value| value as f64))
+    }
+
+    #[wasm_bindgen(js_name = canSetMessageLifetime)]
+    pub async fn can_set_message_lifetime(&self, room_id: String) -> Result<bool, JsValue> {
+        pocky_core::can_set_message_lifetime(&self.client, &room_id)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = setMessageLifetime)]
+    pub async fn set_message_lifetime(
+        &self,
+        room_id: String,
+        seconds: Option<f64>,
+    ) -> Result<(), JsValue> {
+        let seconds = seconds.map(|value| value as u64);
+        pocky_core::set_message_lifetime(&self.client, &room_id, seconds)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = createGroup)]
+    pub async fn create_group(&self, name: String, members: Vec<String>) -> Result<String, JsValue> {
+        pocky_core::create_group(&self.client, &name, &members)
+            .await
+            .map_err(error)
+    }
+
     #[wasm_bindgen(js_name = roomInfo)]
     pub async fn room_info(&self, room_id: String) -> Result<JsValue, JsValue> {
         let details = pocky_core::room_details(&self.client, &room_id)
             .await
             .map_err(error)?;
         to_js(&RoomInfo::from(details))
+    }
+
+    #[wasm_bindgen(js_name = setRoomName)]
+    pub async fn set_room_name(&self, room_id: String, name: String) -> Result<(), JsValue> {
+        pocky_core::set_room_name(&self.client, &room_id, &name)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = setRoomTopic)]
+    pub async fn set_room_topic(&self, room_id: String, topic: String) -> Result<(), JsValue> {
+        pocky_core::set_room_topic(&self.client, &room_id, &topic)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = setRoomAvatar)]
+    pub async fn set_room_avatar(&self, room_id: String, bytes: Vec<u8>) -> Result<(), JsValue> {
+        pocky_core::set_room_avatar(&self.client, &room_id, &bytes)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = invitePeople)]
+    pub async fn invite_people(&self, room_id: String, user_ids: Vec<String>) -> Result<(), JsValue> {
+        pocky_core::invite_people(&self.client, &room_id, &user_ids)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = removeMember)]
+    pub async fn remove_member(&self, room_id: String, user_id: String) -> Result<(), JsValue> {
+        pocky_core::remove_member(&self.client, &room_id, &user_id)
+            .await
+            .map_err(error)
     }
 
     #[wasm_bindgen(js_name = setFavourite)]
@@ -418,6 +699,34 @@ impl PockyClient {
             .await
             .map_err(error)?;
         Ok(RoomTimeline::new(timeline))
+    }
+
+    #[wasm_bindgen(js_name = openMedia)]
+    pub async fn open_media(&self, room_id: String) -> Result<RoomTimeline, JsValue> {
+        let timeline = pocky_core::open_media(&self.client, &room_id)
+            .await
+            .map_err(error)?;
+        Ok(RoomTimeline::new(timeline))
+    }
+
+    #[wasm_bindgen(js_name = forwardMessage)]
+    pub async fn forward_message(
+        &self,
+        from_room: String,
+        event_id: String,
+        to_room: String,
+    ) -> Result<(), JsValue> {
+        pocky_core::forward_message(&self.client, &from_room, &event_id, &to_room)
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = maxUploadSize)]
+    pub async fn max_upload_size(&self) -> Result<f64, JsValue> {
+        let size = pocky_core::max_upload_size(&self.client)
+            .await
+            .map_err(error)?;
+        Ok(size as f64)
     }
 
     #[wasm_bindgen(js_name = loadMedia)]
@@ -476,6 +785,9 @@ pub(crate) fn error(err: CoreError) -> JsValue {
         CoreError::InvalidRecoveryKey => "invalid_recovery_key",
         CoreError::WeakPassphrase => "weak_passphrase",
         CoreError::WeakPassword => "weak_password",
+        CoreError::UsernameTaken => "username_taken",
+        CoreError::InvalidInviteCode => "invalid_invite_code",
+        CoreError::RegistrationUnavailable => "registration_unavailable",
         CoreError::FileTooLarge(_) => "file_too_large",
         CoreError::InvalidName(_) => "invalid_name",
         _ => "unknown",

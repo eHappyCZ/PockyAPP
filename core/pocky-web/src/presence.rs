@@ -30,6 +30,7 @@ pub struct Privacy {
     pub share_presence: bool,
     pub share_typing: bool,
     pub location_precision: &'static str,
+    pub chat_style: &'static str,
 }
 
 impl From<UserPresence> for PresenceInfo {

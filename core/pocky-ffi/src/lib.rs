@@ -14,6 +14,7 @@ use crate::{
     encryption::{EncryptionInfo, EncryptionListener, LogoutWarning},
     location::{GeoLocation, LiveLength, LiveLocationListener, OwnLiveLocation},
     people::{Contact, Invitation},
+    pins::Pinned,
     preferences::{DevicePreferences, LocationArea},
     presence::{OwnStatusListener, PresenceInfo, StatusMessage, TypingListener},
     push::NotificationInfo,
@@ -33,6 +34,7 @@ mod devices;
 mod encryption;
 mod location;
 mod people;
+mod pins;
 mod preferences;
 mod presence;
 mod push;
@@ -79,6 +81,12 @@ pub enum PockyError {
     WeakPassphrase,
     #[error("new password is too weak")]
     WeakPassword,
+    #[error("that username is already taken")]
+    UsernameTaken,
+    #[error("invalid invitation code")]
+    InvalidInviteCode,
+    #[error("registration is not available on this server")]
+    RegistrationUnavailable,
     #[error("PIN must have six digits")]
     InvalidPin,
     #[error("invalid name")]
@@ -106,6 +114,9 @@ impl From<CoreError> for PockyError {
             CoreError::WeakPassphrase => Self::WeakPassphrase,
             CoreError::WeakPassword => Self::WeakPassword,
             CoreError::InvalidPin => Self::InvalidPin,
+            CoreError::UsernameTaken => Self::UsernameTaken,
+            CoreError::InvalidInviteCode => Self::InvalidInviteCode,
+            CoreError::RegistrationUnavailable => Self::RegistrationUnavailable,
             CoreError::InvalidName(_) => Self::InvalidName,
             CoreError::FileTooLarge(limit) => Self::FileTooLarge { limit },
             CoreError::LiveLocationEnded => Self::LiveLocationEnded,
@@ -228,6 +239,22 @@ impl PockyClient {
         Ok(session.to_json())
     }
 
+    pub async fn register(
+        &self,
+        username: String,
+        password: String,
+        invite_code: String,
+        device_name: String,
+    ) -> Result<String, PockyError> {
+        let client = self.client()?;
+        let session = run(async move {
+            pocky_core::register(&client, &username, &password, &invite_code, &device_name).await
+        })
+        .await?;
+
+        Ok(session.to_json())
+    }
+
     pub async fn display_name(&self) -> Result<String, PockyError> {
         let client = self.client()?;
         run(async move { pocky_core::display_name(&client).await }).await
@@ -302,6 +329,75 @@ impl PockyClient {
     pub async fn open_direct_chat(&self, user_id: String) -> Result<String, PockyError> {
         let client = self.client()?;
         run(async move { pocky_core::open_direct_chat(&client, &user_id).await }).await
+    }
+
+    pub async fn block_user(&self, user_id: String) -> Result<(), PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::block_user(&client, &user_id).await }).await
+    }
+
+    pub async fn unblock_user(&self, user_id: String) -> Result<(), PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::unblock_user(&client, &user_id).await }).await
+    }
+
+    pub async fn blocked_users(&self) -> Result<Vec<String>, PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::blocked_users(&client).await }).await
+    }
+
+    pub async fn report_message(
+        &self,
+        room_id: String,
+        event_id: String,
+        reason: Option<String>,
+    ) -> Result<(), PockyError> {
+        let client = self.client()?;
+        run(async move {
+            pocky_core::report_message(&client, &room_id, &event_id, reason.as_deref()).await
+        })
+        .await
+    }
+
+    pub async fn pinned_messages(&self, room_id: String) -> Result<Vec<Pinned>, PockyError> {
+        let client = self.client()?;
+        let messages =
+            run(async move { pocky_core::pinned_messages(&client, &room_id).await }).await?;
+        Ok(messages.into_iter().map(Into::into).collect())
+    }
+
+    pub async fn can_pin_messages(&self, room_id: String) -> Result<bool, PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::can_pin_messages(&client, &room_id).await }).await
+    }
+
+    pub async fn pin_message(&self, room_id: String, event_id: String) -> Result<(), PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::pin_message(&client, &room_id, &event_id).await }).await
+    }
+
+    pub async fn unpin_message(&self, room_id: String, event_id: String) -> Result<(), PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::unpin_message(&client, &room_id, &event_id).await }).await
+    }
+
+    pub async fn message_lifetime(&self, room_id: String) -> Result<Option<u64>, PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::message_lifetime(&client, &room_id).await }).await
+    }
+
+    pub async fn can_set_message_lifetime(&self, room_id: String) -> Result<bool, PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::can_set_message_lifetime(&client, &room_id).await }).await
+    }
+
+    pub async fn set_message_lifetime(
+        &self,
+        room_id: String,
+        seconds: Option<u64>,
+    ) -> Result<(), PockyError> {
+        let client = self.client()?;
+        run(async move { pocky_core::set_message_lifetime(&client, &room_id, seconds).await }).await
     }
 
     pub async fn create_group(

@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 class Notifier(private val context: Context) {
 
     private val manager = NotificationManagerCompat.from(context)
-    private val concealed = ConcurrentHashMap<String, Pair<NotificationInfo, Long>>()
+    private val concealed = ConcurrentHashMap<String, Triple<NotificationInfo, Long, Boolean>>()
 
     fun createChannels() {
         val system = context.getSystemService(NotificationManager::class.java)
@@ -39,7 +39,7 @@ class Notifier(private val context: Context) {
         )
     }
 
-    fun show(info: NotificationInfo, preview: NotificationText) {
+    fun show(info: NotificationInfo, preview: NotificationText, canReply: Boolean) {
         if (!allowed()) return
         val now = System.currentTimeMillis()
         val locked = context.getSystemService(KeyguardManager::class.java).isKeyguardLocked
@@ -47,10 +47,10 @@ class Notifier(private val context: Context) {
         val notification = when {
             preview == NotificationText.NEVER -> generic(info)
             preview == NotificationText.WHEN_UNLOCKED && locked -> {
-                concealed[info.roomId] = info to now
+                concealed[info.roomId] = Triple(info, now, canReply)
                 namesOnly(info)
             }
-            else -> full(info, now)
+            else -> full(info, now, canReply)
         }
         post(info.roomId, notification)
     }
@@ -60,7 +60,7 @@ class Notifier(private val context: Context) {
         concealed.clear()
         pending.forEach { (roomId, entry) ->
             if (manager.activeNotifications.any { it.id == notificationId(roomId) }) {
-                post(roomId, full(entry.first, entry.second, silent = true))
+                post(roomId, full(entry.first, entry.second, entry.third, silent = true))
             }
         }
     }
@@ -70,7 +70,7 @@ class Notifier(private val context: Context) {
         manager.cancel(notificationId(roomId))
     }
 
-    private fun full(info: NotificationInfo, timestamp: Long, silent: Boolean = false): Notification {
+    private fun full(info: NotificationInfo, timestamp: Long, canReply: Boolean, silent: Boolean = false): Notification {
         val me = Person.Builder().setName(context.getString(R.string.notification_me)).build()
         val sender = Person.Builder()
             .setName(senderName(info))
@@ -89,7 +89,7 @@ class Notifier(private val context: Context) {
         return base(info)
             .setStyle(style)
             .setOnlyAlertOnce(silent)
-            .addAction(replyAction(info))
+            .apply { if (canReply) addAction(replyAction(info)) }
             .addAction(readAction(info))
             .build()
     }

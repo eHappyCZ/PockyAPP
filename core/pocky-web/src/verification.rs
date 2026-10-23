@@ -84,6 +84,16 @@ impl Verification {
         self.flow.is_incoming()
     }
 
+    #[wasm_bindgen(js_name = isSelfVerification)]
+    pub fn is_self_verification(&self) -> bool {
+        self.flow.is_self_verification()
+    }
+
+    #[wasm_bindgen(js_name = otherUserId)]
+    pub fn other_user_id(&self) -> String {
+        self.flow.other_user_id()
+    }
+
     pub async fn watch(&self, on_step: Function) {
         let flow = self.flow.clone();
         flow.watch(|phase| notify(&on_step, &Step::from(phase)))

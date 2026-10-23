@@ -114,7 +114,7 @@ private fun NewGroupRow(onClick: () -> Unit) {
                 .size(46.dp)
                 .background(PockyGradient, RoundedCornerShape(14.dp)),
         ) {
-            Icon(PockyIcons.Group, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(22.dp))
+            Icon(PockyIcons.Group, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(22.dp))
         }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {

@@ -9,6 +9,11 @@ export function loadCore(): Promise<typeof core> {
   return ready;
 }
 
+export async function passphraseStrength(passphrase: string) {
+  const core = await loadCore();
+  return core.passphraseStrength(passphrase) as import("./types").PassphraseStrength;
+}
+
 export async function parseGeoUri(uri: string) {
   const core = await loadCore();
   return core.parseGeoUri(uri) as import("./types").GeoPoint | undefined;

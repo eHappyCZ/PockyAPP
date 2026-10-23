@@ -44,6 +44,8 @@
 | 38 | Bezpečnostní fráze pro zálohu klíčů s ukazatelem síly, změna fráze, změna hesla k účtu, náhled hlasovky před odesláním |
 | 39 | Zákaz snímků obrazovky, zámek aplikace (PIN a otisk), smazání účtu, GIFy z klávesnice a animované GIFy, datum v changelogu jen u nejnovější verze |
 | 40 | Libovolný Matrix server: výběr serveru při přihlášení na webu i v Androidu, konfigurace webu pro vlastní nasazení, návod self-hosting, webová aplikace ve veřejném repozitáři |
+| 41 | Web dohnal Android: úprava profilu, zakládání a správa skupin, víc fotek najednou a plná kvalita, video, hlasovky s náhledem, štíty u zpráv, ověřování lidí, pruh při změně identity, informace o zprávě, přeposílání, album chatu, záloha klíčů, změna fráze a hesla, nová identita, smazání účtu, přesnost polohy, vzhled s aurou, instalace jako aplikace (PWA) |
+| 42 | iOS: sestavení jádra do XCFramework, Swift bindingy z UniFFI, balíček `PockyCore`, kostra SwiftUI aplikace (XcodeGen), přihlášení s výběrem serveru, session v Keychainu, seznam chatů |
 
 ## V plánu
 
@@ -62,15 +64,17 @@ Pořadí v rámci skupin odpovídá prioritě. Čísla kroků se přidělí, až
 | Angličtina v aplikaci | texty jsou připravené v `strings.xml`, chybí překlad |
 | Hledání emoji podle názvu | ve výběru emoji pro reakce |
 
-### Webová aplikace (dorovnání s Androidem)
+### Webová aplikace
 
-- album chatu se stažením, sdílením a přeposláním,
-- štíty u zpráv, ověřování lidí a informace o zprávě,
-- zapnutí zálohy klíčů, změna bezpečnostní fráze a hesla, smazání účtu,
-- víc fotek najednou a plná kvalita, posílání videa, nahrávání hlasovek,
-- zakládání a správa skupin, úprava profilu,
-- nastavení přesnosti polohy a vzhledu bublin,
-- instalace jako aplikace (PWA).
+- volba „posílat potvrzení přečtení“ (Android ji má, web zatím ne),
+- oznámení přes Web Push (dnes jen když je karta otevřená).
+
+### iOS (pokračování)
+
+- konverzace: timeline, odesílání, odpovědi, reakce, média,
+- šifrování: ověření zařízení, obnova zálohy, štíty,
+- oznámení přes APNs s dešifrováním v Notification Service Extension,
+- záložka Já s nastavením, poloha a mapa.
 
 ### Větší celky
 
@@ -84,7 +88,7 @@ Pořadí v rámci skupin odpovídá prioritě. Čísla kroků se přidělí, až
 
 ### Platformy
 
-- iOS a macOS (SwiftUI),
+- macOS (SwiftUI, sdílí kód s iOS),
 - Windows (WinUI 3),
 - Linux (GTK4).
 
@@ -100,7 +104,9 @@ Pořadí v rámci skupin odpovídá prioritě. Čísla kroků se přidělí, až
 
 - zámek aplikace s otiskem, GIFy z klávesnice, zákaz snímků v přehledu aplikací (0.9.5-Fix #6),
 - odemčení zálohy jen bezpečnostní frází na novém zařízení, změna fráze na vlastním účtu,
-- reset šifrovací identity, potvrzení přečtení ve skupině, živá poloha na pozadí se dvěma účty.
+- reset šifrovací identity, potvrzení přečtení ve skupině, živá poloha na pozadí se dvěma účty,
+- web: hlasovky z Chrome (WebM) a Safari (MP4) přehrané na Androidu, sdílení z alba, instalace PWA,
+- iOS: první sestavení na Macu a přihlášení v simulátoru.
 
 ## Známá omezení
 

@@ -120,7 +120,7 @@ private fun NotificationCard(title: String, body: String) {
                 .size(36.dp)
                 .background(PockyGradient, CircleShape),
         ) {
-            Text("P", fontWeight = FontWeight.Bold, color = PockyColors.Ink)
+            Text("P", fontWeight = FontWeight.Bold, color = PockyColors.OnBrand)
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {

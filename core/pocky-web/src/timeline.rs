@@ -112,6 +112,46 @@ impl RoomTimeline {
             .map_err(error)
     }
 
+    #[allow(clippy::too_many_arguments)]
+    #[wasm_bindgen(js_name = sendVideo)]
+    pub async fn send_video(
+        &self,
+        bytes: Vec<u8>,
+        mime: String,
+        width: u32,
+        height: u32,
+        duration_ms: f64,
+        thumbnail: Option<Vec<u8>>,
+        caption: Option<String>,
+    ) -> Result<(), JsValue> {
+        let timeline = self.inner.clone();
+        let clip = pocky_core::VideoClip {
+            bytes,
+            mime,
+            width,
+            height,
+            duration_ms: duration_ms as u64,
+            thumbnail,
+        };
+        pocky_core::send_video(&timeline, clip, caption.as_deref())
+            .await
+            .map_err(error)
+    }
+
+    #[wasm_bindgen(js_name = sendVoice)]
+    pub async fn send_voice(
+        &self,
+        bytes: Vec<u8>,
+        mime: String,
+        duration_ms: f64,
+        levels: Vec<f32>,
+    ) -> Result<(), JsValue> {
+        let timeline = self.inner.clone();
+        pocky_core::send_voice(&timeline, bytes, &mime, duration_ms as u64, &levels)
+            .await
+            .map_err(error)
+    }
+
     #[wasm_bindgen(js_name = sendLocation)]
     pub async fn send_location(
         &self,

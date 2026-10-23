@@ -138,6 +138,21 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun register(username: String, password: String, inviteCode: String) {
+        if (_state.value !is AppState.LoggedOut) return
+        _state.value = AppState.LoggedOut(busy = true)
+
+        viewModelScope.launch {
+            try {
+                val fresh = clients.register(username, password, inviteCode, deviceName(), _server.value)
+                client = fresh
+                enterLoggedIn(fresh)
+            } catch (e: PockyException) {
+                _state.value = AppState.LoggedOut(error = e.registerMessageRes())
+            }
+        }
+    }
+
     fun openRoom(roomId: String) {
         val current = _state.value as? AppState.LoggedIn ?: return
         val active = client ?: return
@@ -396,4 +411,14 @@ private fun PockyException.messageRes(): Int = when (this) {
     is PockyException.RateLimited -> R.string.error_rate_limited
     is PockyException.Network -> R.string.error_network
     else -> R.string.error_unknown
+}
+
+@StringRes
+private fun PockyException.registerMessageRes(): Int = when (this) {
+    is PockyException.UsernameTaken -> R.string.error_username_taken
+    is PockyException.InvalidInviteCode -> R.string.error_invite_code
+    is PockyException.RegistrationUnavailable -> R.string.error_register_unavailable
+    is PockyException.InvalidName -> R.string.error_register_name
+    is PockyException.WeakPassword -> R.string.error_register_password
+    else -> messageRes()
 }

@@ -93,12 +93,12 @@ fun VoiceMessage(source: String, durationMs: Long?, waveform: List<Int>, own: Bo
                 .clickable(enabled = player != null, role = Role.Button) { player?.toggle(source) },
         ) {
             if (loading) {
-                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = PockyColors.Ink)
+                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = if (own) PockyColors.Ink else PockyColors.OnBrand)
             } else {
                 Icon(
                     imageVector = if (playing) PockyIcons.Pause else PockyIcons.Play,
                     contentDescription = stringResource(if (playing) R.string.voice_pause else R.string.voice_play),
-                    tint = PockyColors.Ink,
+                    tint = if (own) PockyColors.Ink else PockyColors.OnBrand,
                     modifier = Modifier.size(18.dp),
                 )
             }
@@ -198,7 +198,7 @@ fun RecordingBar(levels: List<Float>, elapsedMs: Long, onCancel: () -> Unit, onS
                 .background(PockyGradient)
                 .clickable(role = Role.Button, onClick = onStop),
         ) {
-            Icon(PockyIcons.Stop, contentDescription = stringResource(R.string.voice_stop), tint = PockyColors.Ink, modifier = Modifier.size(22.dp))
+            Icon(PockyIcons.Stop, contentDescription = stringResource(R.string.voice_stop), tint = PockyColors.OnBrand, modifier = Modifier.size(22.dp))
         }
     }
 }
@@ -289,7 +289,7 @@ fun RecordingReview(recording: Recording, onDiscard: () -> Unit, onSend: () -> U
                 Icon(
                     imageVector = if (playing) PockyIcons.Pause else PockyIcons.Play,
                     contentDescription = stringResource(if (playing) R.string.voice_pause else R.string.voice_play),
-                    tint = PockyColors.Ink,
+                    tint = PockyColors.OnBrand,
                     modifier = Modifier.size(16.dp),
                 )
             }
@@ -326,7 +326,7 @@ fun RecordingReview(recording: Recording, onDiscard: () -> Unit, onSend: () -> U
                 .background(PockyGradient)
                 .clickable(role = Role.Button, onClick = onSend),
         ) {
-            Icon(PockyIcons.Send, contentDescription = stringResource(R.string.voice_send), tint = PockyColors.Ink, modifier = Modifier.size(22.dp))
+            Icon(PockyIcons.Send, contentDescription = stringResource(R.string.voice_send), tint = PockyColors.OnBrand, modifier = Modifier.size(22.dp))
         }
     }
 }

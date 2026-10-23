@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import type { Verification } from "../lib/core";
   import { emojiNames } from "../lib/emoji";
+  import { shortName } from "../lib/text";
   import type { VerificationStep } from "../lib/types";
   import Icon from "./Icon.svelte";
 
@@ -12,6 +13,8 @@
   let dialog: HTMLDialogElement;
 
   const finished = $derived(step.step === "done" || step.step === "cancelled");
+  const own = $derived(verification.isSelfVerification());
+  const other = $derived(shortName(verification.otherUserId()));
 
   onMount(() => {
     if (verification.isIncoming()) step = { step: "incoming" };
@@ -39,24 +42,32 @@
 
 <dialog bind:this={dialog} oncancel={(e) => { e.preventDefault(); close(); }}>
   <header>
-    <Icon name="device" />
-    <h2>Ověření zařízení</h2>
+    <Icon name={own ? "device" : "fingerprint"} />
+    <h2>{own ? "Ověření zařízení" : `Ověření: ${other}`}</h2>
   </header>
 
   {#if step.step === "requested"}
-    <p>Otevři jiné přihlášené zařízení (např. PockyAPP v telefonu nebo Element) a přijmi žádost o ověření.</p>
+    <p>
+      {own
+        ? "Otevři jiné přihlášené zařízení (např. PockyAPP v telefonu nebo Element) a přijmi žádost o ověření."
+        : `Čekám, až ${other} přijme žádost o ověření ve vašem chatu. Nejlíp, když jste spolu nebo si voláte.`}
+    </p>
     <div class="buttons"><button onclick={close}>Zrušit</button></div>
   {:else if step.step === "incoming"}
-    <p>Jiné tvoje zařízení žádá o ověření.</p>
+    <p>{own ? "Jiné tvoje zařízení žádá o ověření." : `${other} tě chce ověřit. Porovnáte spolu stejné symboly.`}</p>
     <div class="buttons">
       <button onclick={close} disabled={busy}>Odmítnout</button>
       <button class="primary" onclick={() => act(() => verification.accept())} disabled={busy}>Přijmout</button>
     </div>
   {:else if step.step === "ready" || step.step === "starting"}
-    <p>Čekám na druhé zařízení…</p>
+    <p>{own ? "Čekám na druhé zařízení…" : `Čekám na ${other}…`}</p>
     <div class="buttons"><button onclick={close}>Zrušit</button></div>
   {:else if step.step === "emojis"}
-    <p>Zkontroluj, že se na obou zařízeních zobrazují stejné symboly ve stejném pořadí.</p>
+    <p>
+      {own
+        ? "Zkontroluj, že se na obou zařízeních zobrazují stejné symboly ve stejném pořadí."
+        : `Porovnej s ${other}, že vidíte stejné symboly ve stejném pořadí.`}
+    </p>
     <ul class="emojis">
       {#each step.emojis as emoji (emoji.index)}
         <li><span>{emoji.symbol}</span><small>{emojiNames[emoji.index] ?? emoji.description}</small></li>
@@ -67,10 +78,14 @@
       <button class="primary" onclick={() => act(() => verification.confirm())} disabled={busy}>Shodují se</button>
     </div>
   {:else if step.step === "confirmed"}
-    <p>Čekám na potvrzení na druhém zařízení…</p>
+    <p>{own ? "Čekám na potvrzení na druhém zařízení…" : `Čekám, až potvrdí i ${other}…`}</p>
   {:else if step.step === "done"}
-    <p class="done"><Icon name="check-circle" /> <strong>Zařízení je ověřené</strong></p>
-    <p>Klíče k šifrovaným zprávám se přenesou z druhého zařízení.</p>
+    <p class="done"><Icon name="check-circle" /> <strong>{own ? "Zařízení je ověřené" : `${other} je ověřený kontakt`}</strong></p>
+    <p>
+      {own
+        ? "Klíče k šifrovaným zprávám se přenesou z druhého zařízení."
+        : "Když se mu někdy změní šifrovací identita, PockyAPP tě upozorní."}
+    </p>
     <div class="buttons"><button class="primary" onclick={close}>Zavřít</button></div>
   {:else}
     <p><strong>Ověření bylo zrušeno</strong></p>

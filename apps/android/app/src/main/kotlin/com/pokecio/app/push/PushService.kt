@@ -32,7 +32,8 @@ class PushService : FirebaseMessagingService() {
                     val client = app.clients.current() ?: return@withTimeoutOrNull
                     val info = client.notification(roomId, eventId) ?: return@withTimeoutOrNull
                     val preview = client.notificationText()
-                    app.notifier.show(info, preview)
+                    val canReply = runCatching { !client.appLock().enabled }.getOrDefault(false)
+                    app.notifier.show(info, preview, canReply)
                 } catch (_: PockyException) {
                 }
             }

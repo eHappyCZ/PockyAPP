@@ -1,5 +1,13 @@
 import type { PockyClient } from "./core";
-import type { OwnStatus, PresenceInfo, PresenceState, Privacy, Typist } from "./types";
+import type {
+  ChatStyle,
+  LocationPrecision,
+  OwnStatus,
+  PresenceInfo,
+  PresenceState,
+  Privacy,
+  Typist,
+} from "./types";
 
 const refreshMs = 60_000;
 const maxTracked = 40;
@@ -59,6 +67,16 @@ export class PresenceTracker {
     if (!value.shareTyping) this.typing = {};
     this.watchTyping();
     this.schedule(0);
+  }
+
+  async setLocationPrecision(precision: LocationPrecision) {
+    await this.client.setLocationPrecision(precision);
+    this.privacy = { ...this.privacy, locationPrecision: precision };
+  }
+
+  async setChatStyle(style: ChatStyle) {
+    await this.client.setChatStyle(style);
+    this.privacy = { ...this.privacy, chatStyle: style };
   }
 
   stop() {

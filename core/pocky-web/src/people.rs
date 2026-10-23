@@ -41,6 +41,10 @@ pub struct RoomInfo {
     pub is_encrypted: bool,
     pub direct_user_id: Option<String>,
     pub members: Vec<Member>,
+    pub can_edit_name: bool,
+    pub can_edit_topic: bool,
+    pub can_edit_avatar: bool,
+    pub can_invite: bool,
 }
 
 impl From<Person> for PersonInfo {
@@ -93,6 +97,10 @@ impl From<RoomDetails> for RoomInfo {
             is_encrypted: details.is_encrypted,
             direct_user_id: details.direct_user_id,
             members: details.members.into_iter().map(Into::into).collect(),
+            can_edit_name: details.can_edit_name,
+            can_edit_topic: details.can_edit_topic,
+            can_edit_avatar: details.can_edit_avatar,
+            can_invite: details.can_invite,
         }
     }
 }

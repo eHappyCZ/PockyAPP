@@ -28,6 +28,11 @@ inherits = "dev"
 debug = false
 strip = "debuginfo"
 
+[profile.apple-dev]
+inherits = "dev"
+debug = false
+strip = "debuginfo"
+
 [profile.web-dev]
 inherits = "release"
 lto = false

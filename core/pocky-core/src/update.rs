@@ -3,7 +3,10 @@ use std::{fmt::Write as _, path::Path, time::Duration};
 use matrix_sdk::reqwest;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
-use tokio::{fs, io::AsyncWriteExt};
+use tokio::{
+    fs,
+    io::{AsyncReadExt, AsyncWriteExt},
+};
 
 use crate::error::{CoreError, Result};
 
@@ -117,6 +120,7 @@ pub async fn download_update(
     let mut response = reqwest::Client::builder()
         .user_agent("PockyAPP")
         .connect_timeout(TIMEOUT)
+        .redirect(trusted_redirects())
         .build()
         .map_err(|e| CoreError::Network(e.to_string()))?
         .get(&update.url)
@@ -152,8 +156,29 @@ pub async fn download_update(
 }
 
 pub async fn verify_file(path: &Path, sha256: &str) -> Result<bool> {
-    let bytes = fs::read(path).await?;
-    Ok(hex(&Sha256::digest(&bytes)) == sha256.to_ascii_lowercase())
+    let mut file = fs::File::open(path).await?;
+    let mut hasher = Sha256::new();
+    let mut buffer = vec![0u8; 64 * 1024];
+    loop {
+        let read = file.read(&mut buffer).await?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
+    Ok(hex(&hasher.finalize()) == sha256.to_ascii_lowercase())
+}
+
+fn trusted_redirects() -> reqwest::redirect::Policy {
+    reqwest::redirect::Policy::custom(|attempt| {
+        if attempt.previous().len() >= 5 {
+            attempt.error("too many redirects")
+        } else if attempt.url().as_str().starts_with(TRUSTED_ORIGIN) {
+            attempt.follow()
+        } else {
+            attempt.error("redirect leaves trusted origin")
+        }
+    })
 }
 
 fn hex(bytes: &[u8]) -> String {

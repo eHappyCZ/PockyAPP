@@ -234,7 +234,7 @@ private fun GalleryTabs(selected: GalleryTab, counts: Map<GalleryTab, Int>, onSe
             tabs.forEach { tab ->
                 val active = tab == selected
                 val color by animateColorAsState(
-                    if (active) PockyColors.Ink else PockyColors.InkMuted,
+                    if (active) PockyColors.OnBrand else PockyColors.InkMuted,
                     label = "gallery-text",
                 )
                 Column(

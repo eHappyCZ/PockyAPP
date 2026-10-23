@@ -162,7 +162,7 @@ fun NewGroupScreen(
                         .size(96.dp)
                         .background(PockyGradient, RoundedCornerShape(30.dp)),
                 ) {
-                    Icon(PockyIcons.Group, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(42.dp))
+                    Icon(PockyIcons.Group, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(42.dp))
                 }
                 Spacer(Modifier.height(24.dp))
                 OutlinedTextField(

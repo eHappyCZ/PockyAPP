@@ -279,7 +279,7 @@ private fun AttachOption(icon: ImageVector, label: String, modifier: Modifier, o
                 .size(54.dp)
                 .background(PockyGradient, CircleShape),
         ) {
-            Icon(icon, contentDescription = null, tint = PockyColors.Ink, modifier = Modifier.size(26.dp))
+            Icon(icon, contentDescription = null, tint = PockyColors.OnBrand, modifier = Modifier.size(26.dp))
         }
         Spacer(Modifier.height(10.dp))
         Text(label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = PockyColors.Ink)

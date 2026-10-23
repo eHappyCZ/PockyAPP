@@ -31,6 +31,7 @@ class MessageCheckWorker(context: Context, params: WorkerParameters) : Coroutine
             if (!app.inForeground) client.stopSync()
 
             val preview = client.notificationText()
+            val canReply = runCatching { !client.appLock().enabled }.getOrDefault(false)
             val seen = applicationContext.getSharedPreferences(STORE, Context.MODE_PRIVATE)
             val editor = seen.edit()
             rooms.filter { it.unreadMessages > 0u && it.lastMessage?.isOwn == false }
@@ -38,7 +39,7 @@ class MessageCheckWorker(context: Context, params: WorkerParameters) : Coroutine
                     val timestamp = room.timestampMs?.toLong() ?: return@forEach
                     val key = room.id.hashCode().toString()
                     if (timestamp <= seen.getLong(key, 0L)) return@forEach
-                    app.notifier.show(room.asNotification(), preview)
+                    app.notifier.show(room.asNotification(), preview, canReply)
                     editor.putLong(key, timestamp)
                 }
             editor.apply()

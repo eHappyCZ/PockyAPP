@@ -1,3 +1,9 @@
 [bindings.kotlin]
 package_name = "com.pokecio.app.core"
 cdylib_name = "pocky_ffi"
+
+[bindings.swift]
+module_name = "PockyCore"
+ffi_module_name = "PockyFFI"
+ffi_module_filename = "PockyFFI"
+generate_immutable_records = true

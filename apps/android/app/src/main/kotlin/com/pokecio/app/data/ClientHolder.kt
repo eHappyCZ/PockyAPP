@@ -38,6 +38,26 @@ class ClientHolder(context: Context) {
         fresh
     }
 
+    suspend fun register(
+        username: String,
+        password: String,
+        inviteCode: String,
+        deviceName: String,
+        server: String,
+    ): PockyClient = lock.withLock {
+        val passphrase = io { sessions.databasePassphrase() }
+        val fresh = createClient(matrixDir, passphrase, server)
+        replace(fresh)
+        try {
+            val session = fresh.register(username, password, inviteCode, deviceName)
+            io { sessions.saveSession(session) }
+        } catch (e: PockyException) {
+            replace(null)
+            throw e
+        }
+        fresh
+    }
+
     suspend fun logout() = lock.withLock {
         try {
             client?.logout()

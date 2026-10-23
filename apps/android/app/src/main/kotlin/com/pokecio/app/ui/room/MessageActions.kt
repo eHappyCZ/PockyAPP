@@ -14,12 +14,19 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -32,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +65,11 @@ fun MessageActions(
     onCopy: () -> Unit,
     onForward: () -> Unit,
     onInfo: () -> Unit,
+    pinned: Boolean,
+    canPin: Boolean,
+    onPin: () -> Unit,
+    onReport: () -> Unit,
+    onBlock: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -77,6 +90,7 @@ fun MessageActions(
         Column(
             Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
                 .padding(bottom = 12.dp),
         ) {
@@ -107,6 +121,17 @@ fun MessageActions(
                 ActionRow(PockyIcons.Forward, stringResource(R.string.media_forward), onClick = onForward)
             }
             ActionRow(PockyIcons.Info, stringResource(R.string.msg_info), onClick = onInfo)
+            if (canPin && event.eventId != null) {
+                ActionRow(
+                    PockyIcons.Pin,
+                    stringResource(if (pinned) R.string.msg_unpin else R.string.msg_pin),
+                    onClick = onPin,
+                )
+            }
+            if (!event.isOwn && event.eventId != null) {
+                ActionRow(PockyIcons.Alert, stringResource(R.string.msg_report), onClick = onReport)
+                ActionRow(PockyIcons.EyeOff, stringResource(R.string.msg_block), onClick = onBlock)
+            }
             if (event.canRedact) {
                 ActionRow(
                     PockyIcons.Trash,
@@ -148,23 +173,72 @@ fun plainText(content: TimelineContent): String? = when (content) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EmojiPickerSheet(onPick: (String) -> Unit, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    var query by remember { mutableStateOf("") }
+    val found = remember(query) { EmojiSearch.find(context, query) }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = PockyColors.Surface,
     ) {
-        AndroidView(
-            factory = { context ->
-                EmojiPickerView(context).apply {
-                    emojiGridColumns = 8
-                    setOnEmojiPickedListener { item -> onPick(item.emoji) }
+        Column(Modifier.navigationBarsPadding()) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                singleLine = true,
+                placeholder = { Text(stringResource(R.string.emoji_search_hint)) },
+                leadingIcon = {
+                    Icon(PockyIcons.Search, contentDescription = null, tint = PockyColors.InkMuted, modifier = Modifier.size(18.dp))
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PockyColors.Accent,
+                    cursorColor = PockyColors.AccentSoft,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            if (query.isBlank()) {
+                AndroidView(
+                    factory = { viewContext ->
+                        EmojiPickerView(viewContext).apply {
+                            emojiGridColumns = 8
+                            setOnEmojiPickedListener { item -> onPick(item.emoji) }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(380.dp),
+                )
+            } else if (found.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.emoji_search_none),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = PockyColors.InkMuted,
+                    modifier = Modifier.padding(20.dp),
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(8),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(380.dp)
+                        .padding(horizontal = 8.dp),
+                ) {
+                    items(found, key = { it.emoji }) { entry ->
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .height(46.dp)
+                                .clickable(role = Role.Button) { onPick(entry.emoji) },
+                        ) {
+                            Text(entry.emoji, fontSize = 26.sp)
+                        }
+                    }
                 }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(420.dp)
-                .navigationBarsPadding(),
-        )
+            }
+        }
     }
 }
 

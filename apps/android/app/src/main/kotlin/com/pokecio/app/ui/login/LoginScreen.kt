@@ -286,7 +286,7 @@ private fun Tagline() {
 }
 
 @Composable
-private fun FieldLabel(text: String) {
+internal fun FieldLabel(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleSmall,

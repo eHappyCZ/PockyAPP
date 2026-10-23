@@ -71,6 +71,7 @@ class RoomController(
 
     val history = RoomHistoryController(client, roomId, scope)
     val media = RoomMediaController(client, roomId, scope)
+    val moderation = RoomModerationController(client, roomId, scope)
 
     private val _members = MutableStateFlow<Map<String, Member>>(emptyMap())
     val members: StateFlow<Map<String, Member>> = _members.asStateFlow()

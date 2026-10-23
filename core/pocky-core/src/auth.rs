@@ -1,6 +1,15 @@
 use matrix_sdk::{
     ruma::{
-        api::client::uiaa::{AuthData, MatrixUserIdentifier, Password, UserIdentifier},
+        api::{
+            client::{
+                account::register,
+                uiaa::{
+                    AuthData, AuthType, Dummy, MatrixUserIdentifier, Password, RegistrationToken,
+                    UiaaInfo, UserIdentifier,
+                },
+            },
+            error::ErrorKind,
+        },
         UserId,
     },
     Client, SessionChange,
@@ -12,6 +21,8 @@ use crate::{
     error::{CoreError, Result},
     session::Session,
 };
+
+const MAX_REGISTRATION_STEPS: usize = 6;
 
 pub async fn login(
     client: &Client,
@@ -32,6 +43,96 @@ pub async fn login(
         .await?;
 
     Session::from_client(client).ok_or(CoreError::NotLoggedIn)
+}
+
+const MIN_PASSWORD_CHARS: usize = 8;
+const MAX_USERNAME_CHARS: usize = 64;
+
+pub async fn register(
+    client: &Client,
+    username: &str,
+    password: &str,
+    invite_code: &str,
+    device_name: &str,
+) -> Result<Session> {
+    let username = clean_username(username)?;
+    if password.chars().count() < MIN_PASSWORD_CHARS {
+        return Err(CoreError::WeakPassword);
+    }
+    let invite_code = invite_code.trim();
+    if invite_code.is_empty() {
+        return Err(CoreError::InvalidInviteCode);
+    }
+
+    let mut request = register::v3::Request::new();
+    request.username = Some(username);
+    request.password = Some(password.to_owned());
+    request.initial_device_display_name = Some(device_name.to_owned());
+
+    let mut token_sent = false;
+    for _ in 0..MAX_REGISTRATION_STEPS {
+        let err = match client.matrix_auth().register(request.clone()).await {
+            Ok(_) => return Session::from_client(client).ok_or(CoreError::NotLoggedIn),
+            Err(err) => err,
+        };
+        let Some(info) = err.as_uiaa_response() else {
+            return Err(registration_error(err));
+        };
+        if token_sent && !info.completed.contains(&AuthType::RegistrationToken) {
+            return Err(CoreError::InvalidInviteCode);
+        }
+
+        let session = info.session.clone();
+        let stage = next_stage(info)?;
+        request.auth = Some(match stage {
+            AuthType::RegistrationToken => {
+                token_sent = true;
+                let mut data = RegistrationToken::new(invite_code.to_owned());
+                data.session = session;
+                AuthData::RegistrationToken(data)
+            }
+            _ => {
+                let mut data = Dummy::new();
+                data.session = session;
+                AuthData::Dummy(data)
+            }
+        });
+    }
+    Err(CoreError::RegistrationUnavailable)
+}
+
+fn clean_username(input: &str) -> Result<String> {
+    let name = input.trim().trim_start_matches('@');
+    let name = name.split(':').next().unwrap_or_default().to_lowercase();
+    let allowed = |c: char| c.is_ascii_lowercase() || c.is_ascii_digit() || "._=-/".contains(c);
+    if name.is_empty() || name.chars().count() > MAX_USERNAME_CHARS || !name.chars().all(allowed) {
+        return Err(CoreError::InvalidName("username".to_owned()));
+    }
+    Ok(name)
+}
+
+fn next_stage(info: &UiaaInfo) -> Result<AuthType> {
+    let supported = |stage: &AuthType| matches!(stage, AuthType::RegistrationToken | AuthType::Dummy);
+    info.flows
+        .iter()
+        .filter(|flow| flow.stages.iter().all(supported))
+        .filter(|flow| info.completed.iter().all(|done| flow.stages.contains(done)))
+        .find_map(|flow| {
+            flow.stages
+                .iter()
+                .find(|stage| !info.completed.contains(stage))
+                .cloned()
+        })
+        .ok_or(CoreError::RegistrationUnavailable)
+}
+
+fn registration_error(err: matrix_sdk::Error) -> CoreError {
+    match err.client_api_error_kind() {
+        Some(ErrorKind::UserInUse) => CoreError::UsernameTaken,
+        Some(ErrorKind::InvalidUsername) => CoreError::InvalidName("username".to_owned()),
+        Some(ErrorKind::Forbidden) => CoreError::RegistrationUnavailable,
+        _ => err.into(),
+    }
 }
 
 pub async fn restore_session(client: &Client, session: &Session) -> Result<()> {
@@ -143,6 +244,47 @@ mod tests {
     use super::*;
     use crate::client::SERVER_NAME;
 
+
+    fn info(json: &str) -> UiaaInfo {
+        serde_json::from_str(json).unwrap()
+    }
+
+    #[test]
+    fn usernames_are_cleaned() {
+        assert_eq!(clean_username(" @Karel:pokecio.com ").unwrap(), "karel");
+        assert_eq!(clean_username("jana.nova").unwrap(), "jana.nova");
+        assert!(clean_username("").is_err());
+        assert!(clean_username("jana nova").is_err());
+        assert!(clean_username("jaňa").is_err());
+    }
+
+    #[test]
+    fn registration_walks_through_the_stages() {
+        let start = info(
+            r#"{"flows":[{"stages":["m.login.registration_token","m.login.dummy"]}],"session":"s"}"#,
+        );
+        assert_eq!(next_stage(&start).unwrap(), AuthType::RegistrationToken);
+
+        let after_token = info(
+            r#"{"flows":[{"stages":["m.login.registration_token","m.login.dummy"]}],
+                "completed":["m.login.registration_token"],"session":"s"}"#,
+        );
+        assert_eq!(next_stage(&after_token).unwrap(), AuthType::Dummy);
+    }
+
+    #[test]
+    fn unsupported_stages_are_refused() {
+        let captcha = info(r#"{"flows":[{"stages":["m.login.recaptcha"]}],"session":"s"}"#);
+        assert!(matches!(
+            next_stage(&captcha),
+            Err(CoreError::RegistrationUnavailable)
+        ));
+
+        let either = info(
+            r#"{"flows":[{"stages":["m.login.recaptcha"]},{"stages":["m.login.dummy"]}],"session":"s"}"#,
+        );
+        assert_eq!(next_stage(&either).unwrap(), AuthType::Dummy);
+    }
     #[test]
     fn full_user_id_is_not_a_display_name() {
         let user_id = UserId::parse("@pokeapp:pokecio.com").unwrap();

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { messageHtml } from "../lib/format";
-  import { contentText, previewContent, shortName, timeOfDay } from "../lib/text";
+  import { contentText, previewContent, shieldText, shortName, timeOfDay } from "../lib/text";
   import type { EventEntry, MessageActions } from "../lib/types";
   import AudioMessage from "./AudioMessage.svelte";
   import Avatar from "./Avatar.svelte";
@@ -73,6 +73,8 @@
           {#if textual}
             <button type="button" title="Kopírovat" onclick={(e) => { e.stopPropagation(); copy(); }}><Icon name="copy" size={17} /></button>
           {/if}
+          <button type="button" title="Přeposlat" onclick={(e) => { e.stopPropagation(); run(() => actions.forward(event)); }}><Icon name="forward" size={17} /></button>
+          <button type="button" title="Informace o zprávě" onclick={(e) => { e.stopPropagation(); run(() => actions.info(event)); }}><Icon name="info" size={17} /></button>
           {#if event.canRedact}
             <button type="button" class="danger" title="Smazat" onclick={(e) => { e.stopPropagation(); run(() => actions.remove(event)); }}><Icon name="trash" size={17} /></button>
           {/if}
@@ -120,6 +122,11 @@
       {/if}
 
       <span class="meta">
+        {#if event.shield}
+          <span class="shield" class:danger={event.shield.danger} title={shieldText(event.shield)}>
+            <Icon name="shield-alert" size={13} />
+          </span>
+        {/if}
         {#if event.isEdited}<span>upraveno</span>{/if}
         <span>{timeOfDay(event.timestampMs)}</span>
         {#if event.isOwn}
@@ -339,6 +346,15 @@
 
   .own .meta {
     color: color-mix(in srgb, #fff 70%, transparent);
+  }
+
+  .shield {
+    display: inline-flex;
+    color: var(--gold);
+  }
+
+  .shield.danger {
+    color: #f87171;
   }
 
   .tick.read {

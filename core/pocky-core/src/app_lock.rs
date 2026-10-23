@@ -6,7 +6,8 @@ use sha2::Sha256;
 use crate::error::{CoreError, Result};
 
 const KEY: &[u8] = b"pocky.app_lock";
-const ITERATIONS: u32 = 100_000;
+const ITERATIONS: u32 = 600_000;
+const LEGACY_ITERATIONS: u32 = 100_000;
 const FREE_ATTEMPTS: u32 = 5;
 const FIRST_BLOCK_MS: u64 = 30_000;
 const MAX_BLOCK_MS: u64 = 60 * 60 * 1000;
@@ -33,6 +34,7 @@ pub enum UnlockResult {
 struct StoredLock {
     salt: String,
     hash: String,
+    iterations: u32,
     biometrics: bool,
     timeout_seconds: u32,
     failed: u32,
@@ -42,6 +44,14 @@ struct StoredLock {
 impl StoredLock {
     fn enabled(&self) -> bool {
         !self.hash.is_empty()
+    }
+
+    fn effective_iterations(&self) -> u32 {
+        if self.iterations == 0 {
+            LEGACY_ITERATIONS
+        } else {
+            self.iterations
+        }
     }
 
     fn settings(&self) -> AppLockSettings {
@@ -62,9 +72,14 @@ impl StoredLock {
                 until_ms: self.blocked_until_ms,
             };
         }
-        if hash_pin(pin, &self.salt) == self.hash {
+        let iterations = self.effective_iterations();
+        if same_hash(&hash_pin(pin, &self.salt, iterations), &self.hash) {
             self.failed = 0;
             self.blocked_until_ms = 0;
+            if iterations < ITERATIONS {
+                self.hash = hash_pin(pin, &self.salt, ITERATIONS);
+                self.iterations = ITERATIONS;
+            }
             return UnlockResult::Unlocked;
         }
 
@@ -97,10 +112,15 @@ pub fn pin_allowed(pin: &str) -> bool {
     !(constant && steps[0].abs() <= 1)
 }
 
-fn hash_pin(pin: &str, salt: &str) -> String {
+fn hash_pin(pin: &str, salt: &str, iterations: u32) -> String {
     let mut out = [0u8; 32];
-    pbkdf2::pbkdf2_hmac::<Sha256>(pin.as_bytes(), salt.as_bytes(), ITERATIONS, &mut out);
+    pbkdf2::pbkdf2_hmac::<Sha256>(pin.as_bytes(), salt.as_bytes(), iterations, &mut out);
     hex(&out)
+}
+
+fn same_hash(a: &str, b: &str) -> bool {
+    let (a, b) = (a.as_bytes(), b.as_bytes());
+    a.len() == b.len() && a.iter().zip(b).fold(0u8, |diff, (x, y)| diff | (x ^ y)) == 0
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -149,7 +169,8 @@ pub async fn enable_app_lock(
     rand::thread_rng().fill_bytes(&mut salt);
     let salt = hex(&salt);
     let lock = StoredLock {
-        hash: hash_pin(pin, &salt),
+        hash: hash_pin(pin, &salt, ITERATIONS),
+        iterations: ITERATIONS,
         salt,
         biometrics,
         timeout_seconds,
@@ -207,10 +228,31 @@ mod tests {
 
     fn lock(pin: &str) -> StoredLock {
         StoredLock {
-            hash: hash_pin(pin, "sul"),
+            hash: hash_pin(pin, "sul", ITERATIONS),
             salt: "sul".to_owned(),
+            iterations: ITERATIONS,
             ..StoredLock::default()
         }
+    }
+
+    #[test]
+    fn legacy_hash_is_upgraded_after_unlock() {
+        let mut lock = StoredLock {
+            hash: hash_pin("246810", "sul", LEGACY_ITERATIONS),
+            salt: "sul".to_owned(),
+            ..StoredLock::default()
+        };
+        assert_eq!(lock.check("246810", 0), UnlockResult::Unlocked);
+        assert_eq!(lock.iterations, ITERATIONS);
+        assert_eq!(lock.hash, hash_pin("246810", "sul", ITERATIONS));
+        assert_eq!(lock.check("246810", 0), UnlockResult::Unlocked);
+    }
+
+    #[test]
+    fn hashes_compare_by_content() {
+        assert!(same_hash("abc", "abc"));
+        assert!(!same_hash("abc", "abd"));
+        assert!(!same_hash("abc", "ab"));
     }
 
     #[test]

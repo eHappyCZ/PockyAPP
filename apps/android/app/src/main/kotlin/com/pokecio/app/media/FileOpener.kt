@@ -14,10 +14,19 @@ object FileOpener {
         val cached = media.file(source) ?: return null
         return withContext(Dispatchers.IO) {
             val dir = File(context.cacheDir, "open").apply { mkdirs() }
-            val target = File(dir, name.replace('/', '_'))
+            val target = File(dir, safeName(name))
             if (!target.exists() || target.length() != cached.length()) cached.copyTo(target, overwrite = true)
             target
         }
+    }
+
+    fun clear(context: Context) {
+        File(context.cacheDir, "open").deleteRecursively()
+    }
+
+    private fun safeName(name: String): String {
+        val clean = name.replace(Regex("[\\\\/:*?\"<>|\\n\\r]"), "_").trim().take(120)
+        return if (clean.isEmpty() || clean.all { it == '.' }) "file" else clean
     }
 
     fun open(context: Context, file: File, mime: String?): Boolean {

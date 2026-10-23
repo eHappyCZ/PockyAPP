@@ -1,0 +1,24 @@
+{
+  "name": "PockyAPP",
+  "short_name": "PockyAPP",
+  "description": "Soukromý chat s end-to-end šifrováním pro komunitu Pokecio.",
+  "lang": "cs",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#08070c",
+  "theme_color": "#08070c",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

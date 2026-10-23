@@ -73,6 +73,8 @@ import com.pokecio.app.ui.onboarding.LocationStep
 import com.pokecio.app.ui.onboarding.NotificationStep
 import com.pokecio.app.ui.rooms.AuraAvatar
 import com.pokecio.app.ui.rooms.AvatarAura
+import com.pokecio.app.preferences.AppLanguage
+import com.pokecio.app.ui.theme.Appearance
 import com.pokecio.app.ui.theme.PockyColors
 import com.pokecio.app.ui.theme.PockyIcons
 import com.pokecio.app.update.UpdateCheck
@@ -87,6 +89,8 @@ class SettingsActions(
     val onSendReadReceipts: (Boolean) -> Unit,
     val onBlockScreenshots: (Boolean) -> Unit,
     val onChatStyle: (ChatLook) -> Unit,
+    val onBlockedOpen: () -> Unit,
+    val onUnblock: (String) -> Unit,
     val onNotificationPreview: (NotificationText) -> Unit,
     val onLocationPrecision: (LocationArea) -> Unit,
     val onVerify: () -> Unit,
@@ -110,7 +114,7 @@ class UpdateSettings(
     val automatic: Boolean,
 )
 
-private enum class Picker { NOTIFICATIONS, STYLE, LOCATION }
+private enum class Picker { NOTIFICATIONS, STYLE, THEME, LANGUAGE, LOCATION, BLOCKED }
 
 private const val MAX_NAME = 64
 
@@ -129,6 +133,7 @@ fun ProfileScreen(
     busy: Boolean,
     profileBusy: Boolean,
     problems: Flow<Int>,
+    blocked: List<String>,
     actions: SettingsActions,
 ) {
     var picker by rememberSaveable { mutableStateOf<Picker?>(null) }
@@ -217,6 +222,16 @@ fun ProfileScreen(
                     checked = preferences.sendReadReceipts,
                     onChange = actions.onSendReadReceipts,
                 )
+                RowDivider()
+                LinkRow(
+                    icon = PockyIcons.EyeOff,
+                    title = stringResource(R.string.settings_blocked),
+                    value = null,
+                    onClick = {
+                        actions.onBlockedOpen()
+                        picker = Picker.BLOCKED
+                    },
+                )
             }
             Text(
                 text = stringResource(R.string.onboarding_visibility_mutual),
@@ -244,6 +259,20 @@ fun ProfileScreen(
                     title = stringResource(R.string.settings_style),
                     value = stringResource(styleLabel(preferences.chatStyle)),
                     onClick = { picker = Picker.STYLE },
+                )
+                RowDivider()
+                LinkRow(
+                    icon = PockyIcons.Eye,
+                    title = stringResource(R.string.settings_theme),
+                    value = stringResource(themeLabel(Appearance.theme)),
+                    onClick = { picker = Picker.THEME },
+                )
+                RowDivider()
+                LinkRow(
+                    icon = PockyIcons.Chats,
+                    title = stringResource(R.string.settings_language),
+                    value = stringResource(languageLabel(AppLanguage.mode)),
+                    onClick = { picker = Picker.LANGUAGE },
                 )
                 RowDivider()
                 LinkRow(
@@ -415,7 +444,10 @@ fun ProfileScreen(
                 when (open) {
                     Picker.NOTIFICATIONS -> NotificationStep(preferences.notificationPreview, actions.onNotificationPreview)
                     Picker.STYLE -> ChatStyleStep(preferences.chatStyle, actions.onChatStyle)
+                    Picker.THEME -> ThemeStep()
+                    Picker.LANGUAGE -> LanguageStep()
                     Picker.LOCATION -> LocationStep(preferences.locationPrecision, actions.onLocationPrecision)
+                    Picker.BLOCKED -> BlockedStep(blocked, actions.onUnblock)
                 }
             }
         }
@@ -482,7 +514,7 @@ private fun ProfileHeader(
                 Icon(
                     PockyIcons.Photo,
                     contentDescription = stringResource(R.string.profile_photo_change),
-                    tint = PockyColors.Ink,
+                    tint = PockyColors.OnBrand,
                     modifier = Modifier.size(16.dp),
                 )
             }
@@ -708,7 +740,7 @@ internal fun ToggleRow(icon: ImageVector, title: String, checked: Boolean, onCha
             checked = checked,
             onCheckedChange = null,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = PockyColors.Ink,
+                checkedThumbColor = PockyColors.OnBrand,
                 checkedTrackColor = PockyColors.Accent,
                 uncheckedThumbColor = PockyColors.InkMuted,
                 uncheckedTrackColor = PockyColors.Bg,
