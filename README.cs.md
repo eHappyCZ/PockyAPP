@@ -8,11 +8,12 @@
 
 Nativní Matrix klient se společným jádrem v Rustu. Bez reklam, bez analytiky, bez sledování.
 
-[pokecio.com](https://pokecio.com) · [Webová aplikace](https://app.pokecio.com) · [English](README.md)
+[pokecio.com](https://pokecio.com) · [Stáhnout](https://pokecio.com/stahnout/) · [Webová aplikace](https://app.pokecio.com) · [English](README.md)
 
-![Verze](https://img.shields.io/badge/verze-0.9.5--Fix%20%236-8b5cf6)
+![Verze](https://img.shields.io/badge/verze-0.10.3-8b5cf6)
 ![Stav](https://img.shields.io/badge/stav-beta-f3cd66)
 ![Android](https://img.shields.io/badge/Android-9%2B-34d399)
+![Windows](https://img.shields.io/badge/Windows-10%2B-34d399)
 ![Web](https://img.shields.io/badge/Web-WebAssembly-34d399)
 ![Rust](https://img.shields.io/badge/j%C3%A1dro-Rust-a4a0b3)
 ![Matrix](https://img.shields.io/badge/protokol-Matrix-a4a0b3)
@@ -33,7 +34,9 @@ Matrix klientovi, i šifrovaně.
 Veškerá logika chatu je v jednom jádře v Rustu nad
 [matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk), na stejném základu jako Element X.
 Každá platforma nad ním jen kreslí vlastní nativní rozhraní: na Androidu Kotlin a Jetpack Compose,
-na webu Svelte s WebAssembly a jako další přijdou SwiftUI, WinUI a GTK.
+na Windows WinUI 3, na webu Svelte s WebAssembly a jako další přijdou SwiftUI a GTK.
+
+Android, Windows i webovou aplikaci si stáhneš nebo otevřeš na [pokecio.com](https://pokecio.com).
 
 ## Soukromí na prvním místě
 
@@ -58,6 +61,9 @@ na webu Svelte s WebAssembly a jako další přijdou SwiftUI, WinUI a GTK.
 | **Zabezpečení** | Zámek aplikace PINem a otiskem, zákaz snímků obrazovky, změna hesla, smazání účtu |
 | **Přítomnost** | Aura kolem avataru podle stavu online, vlastní stavy s platností, sdílení řízené v každém zařízení zvlášť |
 | **Poloha** | Jednorázová i živá poloha s volitelnou přesností, sdílení na pozadí, záložka Mapa |
+| **Timeline** | Přehled příspěvků z chatů a kanálů, které sleduješ, fotky, reakce, komentáře, veřejné kanály a prostory (v nejnovějším vydání, zdrojový kód přibude s další aktualizací) |
+| **Novinky** | Zprávy ze světa v jednom podepsaném balíčku, kategorie, uložené články, bez sledování toho, co čteš (v nejnovějším vydání, zdrojový kód přibude s další aktualizací) |
+| **Hledání** | Hledání napříč všemi chaty probíhá jen v zařízení, takže funguje i v šifrovaných chatech, s přeskokem na nalezenou zprávu |
 | **Zážitek** | Rozložení pro telefon i tablet, průvodce po přihlášení, plynulé přechody, aktualizace v aplikaci s přehledem novinek |
 
 ## Architektura
@@ -67,7 +73,8 @@ flowchart TB
     subgraph Apps["Nativní aplikace"]
         A["Android<br/>Kotlin · Jetpack Compose"]
         W["Web<br/>Svelte · TypeScript"]
-        P["iOS · macOS · Windows · Linux<br/>v plánu"]
+        D["Windows<br/>C# · WinUI 3"]
+        P["iOS · macOS · Linux<br/>v plánu"]
     end
 
     subgraph Core["Společné jádro (Rust)"]
@@ -78,6 +85,7 @@ flowchart TB
     end
 
     A --> FFI
+    D --> FFI
     P -.-> FFI
     W --> WEB
     FFI --> C
@@ -146,8 +154,9 @@ a web, bezpečnostní rozhodnutí, push server, testování a řešení problém
 
 ## Stav
 
-PockyAPP je v **otevřené betě**. Android a webová aplikace se denně používají, další na řadě jsou
-iOS a desktop. Plánovaná práce je v [roadmapě](docs/handbook/roadmap.md).
+PockyAPP je v **otevřené betě**. Android, Windows a webová aplikace se denně používají, další na
+řadě jsou iOS a macOS. Zdrojový kód aplikace pro Windows, Timeline a Novinek přibude v tomto
+repozitáři s další aktualizací. Plánovaná práce je v [roadmapě](docs/handbook/roadmap.md).
 
 ## Bezpečnost
 

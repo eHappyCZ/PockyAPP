@@ -8,11 +8,12 @@
 
 Native Matrix client with a shared Rust core. No ads, no analytics, no tracking.
 
-[pokecio.com](https://pokecio.com) · [Web app](https://app.pokecio.com) · [Česky](README.cs.md)
+[pokecio.com](https://pokecio.com) · [Download](https://pokecio.com/en/download/) · [Web app](https://app.pokecio.com) · [Česky](README.cs.md)
 
-![Version](https://img.shields.io/badge/version-0.9.5--Fix%20%236-8b5cf6)
+![Version](https://img.shields.io/badge/version-0.10.3-8b5cf6)
 ![Status](https://img.shields.io/badge/status-beta-f3cd66)
 ![Android](https://img.shields.io/badge/Android-9%2B-34d399)
+![Windows](https://img.shields.io/badge/Windows-10%2B-34d399)
 ![Web](https://img.shields.io/badge/Web-WebAssembly-34d399)
 ![Rust](https://img.shields.io/badge/core-Rust-a4a0b3)
 ![Matrix](https://img.shields.io/badge/protocol-Matrix-a4a0b3)
@@ -33,7 +34,9 @@ other Matrix client, including encrypted conversations.
 All chat logic lives in one Rust core built on
 [matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk), the same foundation as Element X.
 Each platform only draws its own native interface on top of it: Kotlin and Jetpack Compose on
-Android, Svelte with WebAssembly on the web, and SwiftUI, WinUI and GTK planned next.
+Android, WinUI 3 on Windows, Svelte with WebAssembly on the web, and SwiftUI and GTK planned next.
+
+Android, Windows and the web app can be downloaded or opened from [pokecio.com](https://pokecio.com).
 
 ## Privacy first
 
@@ -61,6 +64,9 @@ Android, Svelte with WebAssembly on the web, and SwiftUI, WinUI and GTK planned 
 | **Security** | App lock with a PIN and biometrics, screenshot blocking, password change, account deletion |
 | **Presence** | Online aura around avatars, custom statuses with expiry, all sharing controlled per device |
 | **Location** | One-off or live location with adjustable precision, background sharing, map tab |
+| **Timeline** | A feed of posts from the chats and channels you follow, photos, reactions, comments, public channels and spaces (in the latest release, source published with the next update) |
+| **News** | World news in one signed bundle, categories, saved articles, no tracking of what you read (in the latest release, source published with the next update) |
+| **Search** | Search across all chats done only on the device, so it works in encrypted chats too, with a jump to the found message |
 | **Experience** | Phone and tablet layouts, onboarding, smooth transitions, in-app updates with release notes |
 
 ## Architecture
@@ -70,7 +76,8 @@ flowchart TB
     subgraph Apps["Native apps"]
         A["Android<br/>Kotlin · Jetpack Compose"]
         W["Web<br/>Svelte · TypeScript"]
-        P["iOS · macOS · Windows · Linux<br/>planned"]
+        D["Windows<br/>C# · WinUI 3"]
+        P["iOS · macOS · Linux<br/>planned"]
     end
 
     subgraph Core["Shared core (Rust)"]
@@ -81,6 +88,7 @@ flowchart TB
     end
 
     A --> FFI
+    D --> FFI
     P -.-> FFI
     W --> WEB
     FFI --> C
@@ -150,8 +158,9 @@ Android and web specifics, security decisions, the push server, testing and trou
 
 ## Status
 
-PockyAPP is in **open beta**. Android and the web app are in daily use; iOS and desktop clients are
-next. Planned work is tracked in the [roadmap](docs/handbook/en/roadmap.md).
+PockyAPP is in **open beta**. Android, Windows and the web app are in daily use; iOS and macOS are
+next. The source of the Windows app, Timeline and News is published with the next update of this
+repository. Planned work is tracked in the [roadmap](docs/handbook/en/roadmap.md).
 
 ## Security
 
