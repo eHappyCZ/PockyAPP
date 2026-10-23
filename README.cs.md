@@ -152,6 +152,18 @@ umí přihlásit i aplikace pro Android.
 Příručka v [docs/handbook](docs/handbook) popisuje architekturu, API jádra, FFI vrstvu, Android
 a web, bezpečnostní rozhodnutí, push server, testování a řešení problémů.
 
+## Fáze zveřejňování
+
+Zdrojový kód se zveřejňuje postupně, ve fázích podle toho, jak se aplikace vydává:
+
+1. **Nejdřív komunita.** Nové funkce jdou komunitě Pokecio jako sestavení z
+   [pokecio.com](https://pokecio.com) (Android, Windows a webová aplikace) a nejdřív se ověří tam.
+2. **Zdrojový kód na GitHubu.** Až se funkce u komunity osvědčí, její zdrojový kód přibude do tohoto
+   repozitáře s další aktualizací.
+
+Proto může nejnovější vydání obsahovat funkce, jejichž kód tu zatím není. Repozitář vždy odpovídá
+stavu, který už měla komunita v rukou.
+
 ## Stav
 
 PockyAPP je v **otevřené betě**. Android, Windows a webová aplikace se denně používají, další na

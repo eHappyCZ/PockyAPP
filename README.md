@@ -156,6 +156,18 @@ The developer handbook in [docs/handbook/en](docs/handbook/en/README.md) (Englis
 [docs/handbook](docs/handbook/README.md) (Czech) covers the architecture, the core API, the FFI layer,
 Android and web specifics, security decisions, the push server, testing and troubleshooting.
 
+## Release phases
+
+The source code is published in phases, in step with how the app is released:
+
+1. **Community first.** New features go to the Pokecio community as builds from
+   [pokecio.com](https://pokecio.com) (Android, Windows and the web app) and are tested there first.
+2. **Source on GitHub.** Once a feature has proven itself with the community, its source code is
+   added to this repository in the next update.
+
+This is why the latest release can contain features whose code is not here yet. The repository
+always matches a state that has already been in the hands of the community.
+
 ## Status
 
 PockyAPP is in **open beta**. Android, Windows and the web app are in daily use; iOS and macOS are
