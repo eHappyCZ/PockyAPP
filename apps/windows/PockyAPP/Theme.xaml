@@ -12,6 +12,10 @@
             <Color x:Key="PockySuccessColor">#34d399</Color>
             <Color x:Key="PockySurfaceColor">#121019</Color>
             <Color x:Key="PockyGoldColor">#f3cd66</Color>
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#8b5cf6" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#7c3aed" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#6d28d9" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#ffffff" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Color x:Key="PockyBgColor">#f6f4fb</Color>
@@ -23,6 +27,10 @@
             <Color x:Key="PockySuccessColor">#059669</Color>
             <Color x:Key="PockySurfaceColor">#ffffff</Color>
             <Color x:Key="PockyGoldColor">#b7871a</Color>
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#7c3aed" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#6d28d9" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#5b21b6" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#ffffff" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

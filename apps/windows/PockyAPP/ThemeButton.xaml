@@ -1,0 +1,15 @@
+<UserControl
+    x:Class="PockyAPP.ThemeButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Button x:Name="Trigger" Background="Transparent" BorderThickness="0" Padding="10,8">
+        <FontIcon Glyph="&#xE790;" FontSize="16" Foreground="{ThemeResource PockyInkMutedBrush}" />
+        <Button.Flyout>
+            <MenuFlyout Opening="OnOpening">
+                <RadioMenuFlyoutItem x:Name="SystemItem" GroupName="Appearance" Click="OnSystem" />
+                <RadioMenuFlyoutItem x:Name="LightItem" GroupName="Appearance" Click="OnLight" />
+                <RadioMenuFlyoutItem x:Name="DarkItem" GroupName="Appearance" Click="OnDark" />
+            </MenuFlyout>
+        </Button.Flyout>
+    </Button>
+</UserControl>

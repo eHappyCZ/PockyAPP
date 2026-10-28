@@ -6,6 +6,8 @@ public partial class App : Application
 {
     private Window? window;
 
+    internal static AppModel Model { get; } = new();
+
     public App()
     {
         InitializeComponent();
