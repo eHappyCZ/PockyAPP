@@ -19,3 +19,6 @@ apps/apple/.build/
 apps/apple/PockyCore/.build/
 xcuserdata/
 node_modules/
+apps/windows/**/bin/
+apps/windows/**/obj/
+apps/windows/PockyAPP/Core/

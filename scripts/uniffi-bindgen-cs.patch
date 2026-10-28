@@ -1,0 +1,58 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index cf211e3..aef655e 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -7,10 +7,10 @@ members = [
+ ]
+ 
+ [workspace.dependencies]
+-uniffi = { version = "0.31.0", features = ["build"] }
+-uniffi_testing = "0.31.0"
+-uniffi_macros = "0.31.0"
+-uniffi_build = { version = "0.31.0", features=["builtin-bindgen"] }
+-uniffi_bindgen = "0.31.0"
+-uniffi_meta = "0.31.0"
+-uniffi_udl = "0.31.0"
+\ No newline at end of file
++uniffi = { version = "0.32.2", features = ["build"] }
++uniffi_testing = "0.32.2"
++uniffi_macros = "0.32.2"
++uniffi_build = { version = "0.32.2", features=["builtin-bindgen"] }
++uniffi_bindgen = "0.32.2"
++uniffi_meta = "0.32.2"
++uniffi_udl = "0.32.2"
+\ No newline at end of file
+diff --git a/bindgen/src/gen_cs/mod.rs b/bindgen/src/gen_cs/mod.rs
+index 0166f14..137b6f6 100644
+--- a/bindgen/src/gen_cs/mod.rs
++++ b/bindgen/src/gen_cs/mod.rs
+@@ -327,6 +327,7 @@ impl<T: AsType> AsCodeType for T {
+                 key_type,
+                 value_type,
+             } => Box::new(compounds::MapCodeType::new(*key_type, *value_type)),
++            Type::Box { .. } | Type::Set { .. } => unimplemented!(),
+             Type::Custom { name, builtin, .. } => {
+                 Box::new(custom::CustomCodeType::new(name, builtin.as_codetype()))
+             }
+diff --git a/bindgen/templates/Types.cs b/bindgen/templates/Types.cs
+index 9629b22..70a36d1 100644
+--- a/bindgen/templates/Types.cs
++++ b/bindgen/templates/Types.cs
+@@ -92,6 +92,9 @@
+ {%- when Type::Duration %}
+ {% include "DurationHelper.cs" %}
+ 
++{%- when Type::Box { .. } %}
++{%- when Type::Set { .. } %}
++
+ {%- when Type::Custom { module_path, name, builtin } %}
+ {%- if ci.is_external(type_) %}
+ {% include "ExternalTypeTemplate.cs" %}
+diff --git a/rust-toolchain.toml b/rust-toolchain.toml
+deleted file mode 100644
+index c95c905..0000000
+--- a/rust-toolchain.toml
++++ /dev/null
+@@ -1,2 +0,0 @@
+-[toolchain]
+-channel = "1.88"

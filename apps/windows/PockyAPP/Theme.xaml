@@ -1,0 +1,38 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <Color x:Key="PockyBgColor">#08070c</Color>
+            <Color x:Key="PockyAccentColor">#8b5cf6</Color>
+            <Color x:Key="PockyAccentSoftColor">#b8a1fb</Color>
+            <Color x:Key="PockyBubbleOutColor">#7c3aed</Color>
+            <Color x:Key="PockyInkColor">#f4f2f9</Color>
+            <Color x:Key="PockyInkMutedColor">#a4a0b3</Color>
+            <Color x:Key="PockySuccessColor">#34d399</Color>
+            <Color x:Key="PockySurfaceColor">#121019</Color>
+            <Color x:Key="PockyGoldColor">#f3cd66</Color>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <Color x:Key="PockyBgColor">#f6f4fb</Color>
+            <Color x:Key="PockyAccentColor">#7c3aed</Color>
+            <Color x:Key="PockyAccentSoftColor">#6d45d6</Color>
+            <Color x:Key="PockyBubbleOutColor">#7c3aed</Color>
+            <Color x:Key="PockyInkColor">#17141f</Color>
+            <Color x:Key="PockyInkMutedColor">#6b6679</Color>
+            <Color x:Key="PockySuccessColor">#059669</Color>
+            <Color x:Key="PockySurfaceColor">#ffffff</Color>
+            <Color x:Key="PockyGoldColor">#b7871a</Color>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <SolidColorBrush x:Key="PockyBgBrush" Color="{ThemeResource PockyBgColor}" />
+    <SolidColorBrush x:Key="PockySurfaceBrush" Color="{ThemeResource PockySurfaceColor}" />
+    <SolidColorBrush x:Key="PockyAccentBrush" Color="{ThemeResource PockyAccentColor}" />
+    <SolidColorBrush x:Key="PockyAccentSoftBrush" Color="{ThemeResource PockyAccentSoftColor}" />
+    <SolidColorBrush x:Key="PockyBubbleOutBrush" Color="{ThemeResource PockyBubbleOutColor}" />
+    <SolidColorBrush x:Key="PockyInkBrush" Color="{ThemeResource PockyInkColor}" />
+    <SolidColorBrush x:Key="PockyInkMutedBrush" Color="{ThemeResource PockyInkMutedColor}" />
+    <SolidColorBrush x:Key="PockySuccessBrush" Color="{ThemeResource PockySuccessColor}" />
+    <SolidColorBrush x:Key="PockyGoldBrush" Color="{ThemeResource PockyGoldColor}" />
+</ResourceDictionary>
